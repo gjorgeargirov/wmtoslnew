@@ -1868,9 +1868,59 @@ async function startMigration() {
       // Check preferences for notifications and auto-navigate
       const preferences = JSON.parse(localStorage.getItem('userPreferences') || '{}');
       
-      // Email notifications (would require backend service)
-      if (preferences.emailNotifications !== false) {
-        // Email notification would be sent here via backend service
+      // Send email notification if enabled
+      if (preferences.emailNotifications !== false && window.emailAPI) {
+        try {
+          const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+          const userEmail = user.email || 'demo@iwconnect.com';
+          const userName = user.name || 'User';
+          
+          const durationFormatted = duration ? formatDuration(duration) : 'N/A';
+          const projectName = currentMigration?.project || document.getElementById('migrationProject')?.value || 'Unassigned';
+          
+          const emailBody = `
+            <html>
+              <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <h2 style="color: #6366f1;">Migration Completed Successfully! ✨</h2>
+                  <p>Hello ${userName},</p>
+                  <p>Your migration has completed successfully. Here are the details:</p>
+                  <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <p><strong>File Name:</strong> ${uploadedFile.name}</p>
+                    <p><strong>Project:</strong> ${projectName}</p>
+                    <p><strong>Duration:</strong> ${durationFormatted}</p>
+                    <p><strong>Status:</strong> <span style="color: #10b981; font-weight: bold;">Completed</span></p>
+                    <p><strong>Execution ID:</strong> ${currentMigration?.executionId || 'N/A'}</p>
+                  </div>
+                  <p>You can view the full details and results in your Dashboard.</p>
+                  <p style="margin-top: 30px; color: #6b7280; font-size: 0.9em;">
+                    Best regards,<br>
+                    IWConnect Migration Accelerator
+                  </p>
+                </div>
+              </body>
+            </html>
+          `;
+          
+          await window.emailAPI.sendEmail({
+            to: userEmail,
+            subject: `Migration Complete: ${uploadedFile.name}`,
+            body: emailBody,
+            migrationData: {
+              fileName: uploadedFile.name,
+              project: projectName,
+              duration: durationFormatted,
+              status: 'success',
+              executionId: currentMigration?.executionId,
+              timestamp: new Date().toISOString()
+            }
+          });
+          
+          console.log('✅ Migration completion email sent');
+        } catch (error) {
+          console.error('❌ Failed to send migration completion email:', error);
+          // Don't show error to user - email failure shouldn't block the UI
+        }
       }
       
       // Show browser notification if enabled
@@ -1952,9 +2002,59 @@ async function startMigration() {
       // Check preferences for notifications
       const preferences = JSON.parse(localStorage.getItem('userPreferences') || '{}');
       
-      // Email notifications (would require backend service)
-      if (preferences.emailNotifications !== false) {
-        // Email notification would be sent here via backend service
+      // Send email notification if enabled
+      if (preferences.emailNotifications !== false && window.emailAPI) {
+        try {
+          const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+          const userEmail = user.email || 'demo@iwconnect.com';
+          const userName = user.name || 'User';
+          
+          const durationFormatted = duration ? formatDuration(duration) : 'N/A';
+          const projectName = currentMigration?.project || document.getElementById('migrationProject')?.value || 'Unassigned';
+          
+          const emailBody = `
+            <html>
+              <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                  <h2 style="color: #6366f1;">Migration Completed Successfully! ✨</h2>
+                  <p>Hello ${userName},</p>
+                  <p>Your migration has completed successfully. Here are the details:</p>
+                  <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <p><strong>File Name:</strong> ${uploadedFile.name}</p>
+                    <p><strong>Project:</strong> ${projectName}</p>
+                    <p><strong>Duration:</strong> ${durationFormatted}</p>
+                    <p><strong>Status:</strong> <span style="color: #10b981; font-weight: bold;">Completed</span></p>
+                    <p><strong>Execution ID:</strong> ${currentMigration?.executionId || 'N/A'}</p>
+                  </div>
+                  <p>You can view the full details and results in your Dashboard.</p>
+                  <p style="margin-top: 30px; color: #6b7280; font-size: 0.9em;">
+                    Best regards,<br>
+                    IWConnect Migration Accelerator
+                  </p>
+                </div>
+              </body>
+            </html>
+          `;
+          
+          await window.emailAPI.sendEmail({
+            to: userEmail,
+            subject: `Migration Complete: ${uploadedFile.name}`,
+            body: emailBody,
+            migrationData: {
+              fileName: uploadedFile.name,
+              project: projectName,
+              duration: durationFormatted,
+              status: 'success',
+              executionId: currentMigration?.executionId,
+              timestamp: new Date().toISOString()
+            }
+          });
+          
+          console.log('✅ Migration completion email sent');
+        } catch (error) {
+          console.error('❌ Failed to send migration completion email:', error);
+          // Don't show error to user - email failure shouldn't block the UI
+        }
       }
       
       // Show browser notification if enabled
@@ -2008,9 +2108,60 @@ async function startMigration() {
     // Check preferences for notifications on failure
     const preferences = JSON.parse(localStorage.getItem('userPreferences') || '{}');
     
-    // Email notifications (would require backend service)
-    if (preferences.emailNotifications !== false) {
-      // Email notification would be sent here via backend service
+    // Send email notification if enabled (for failed migrations)
+    if (preferences.emailNotifications !== false && window.emailAPI) {
+      try {
+        const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+        const userEmail = user.email || 'demo@iwconnect.com';
+        const userName = user.name || 'User';
+        
+        const durationFormatted = duration ? formatDuration(duration) : 'N/A';
+        const projectName = currentMigration?.project || document.getElementById('migrationProject')?.value || 'Unassigned';
+        const errorMsg = error.message || "An unknown error occurred";
+        
+        const emailBody = `
+          <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+              <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #ef4444;">Migration Failed ❌</h2>
+                <p>Hello ${userName},</p>
+                <p>Unfortunately, your migration has failed. Here are the details:</p>
+                <div style="background: #fef2f2; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ef4444;">
+                  <p><strong>File Name:</strong> ${fileName}</p>
+                  <p><strong>Project:</strong> ${projectName}</p>
+                  <p><strong>Duration:</strong> ${durationFormatted}</p>
+                  <p><strong>Status:</strong> <span style="color: #ef4444; font-weight: bold;">Failed</span></p>
+                  <p><strong>Error:</strong> ${errorMsg}</p>
+                </div>
+                <p>Please check the error details and try again. If the problem persists, contact support.</p>
+                <p style="margin-top: 30px; color: #6b7280; font-size: 0.9em;">
+                  Best regards,<br>
+                  IWConnect Migration Accelerator
+                </p>
+              </div>
+            </body>
+          </html>
+        `;
+        
+        await window.emailAPI.sendEmail({
+          to: userEmail,
+          subject: `Migration Failed: ${fileName}`,
+          body: emailBody,
+          migrationData: {
+            fileName: fileName,
+            project: projectName,
+            duration: durationFormatted,
+            status: 'failed',
+            error: errorMsg,
+            timestamp: new Date().toISOString()
+          }
+        });
+        
+        console.log('✅ Migration failure email sent');
+      } catch (emailError) {
+        console.error('❌ Failed to send migration failure email:', emailError);
+        // Don't show error to user - email failure shouldn't block the UI
+      }
     }
     
     // Browser notifications

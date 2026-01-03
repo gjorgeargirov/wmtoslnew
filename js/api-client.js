@@ -135,6 +135,17 @@ const projectAPI = {
   },
 };
 
+// Email notification API
+const emailAPI = {
+  // Send email notification
+  async sendEmail(emailData) {
+    return apiRequest('/api/notifications/email', {
+      method: 'POST',
+      body: JSON.stringify(emailData),
+    });
+  },
+};
+
 // Make API client globally available IMMEDIATELY
 // This must happen synchronously so users.js can find it
 (function() {
@@ -150,6 +161,9 @@ const projectAPI = {
     }
     if (typeof migrationDBAPI !== 'undefined') {
       window.migrationDBAPI = migrationDBAPI;
+    }
+    if (typeof emailAPI !== 'undefined') {
+      window.emailAPI = emailAPI;
     }
     if (typeof API_BASE_URL !== 'undefined') {
       window.API_BASE_URL = API_BASE_URL;
