@@ -41,10 +41,8 @@ const CONFIG = {
   
   PROXY_ENDPOINTS: {
     development: 'http://localhost:8001/upload',
-    staging: 'https://migration-accelerator-proxy.YOUR_SUBDOMAIN.workers.dev/upload',
-    production: 'https://migration-accelerator-proxy.YOUR_SUBDOMAIN.workers.dev/upload'
-    // Replace YOUR_SUBDOMAIN with your Cloudflare Workers subdomain
-    // Example: https://migration-accelerator-proxy.your-account.workers.dev/upload
+    staging: 'https://wmtoslnew.argirov-gjorge.workers.dev/upload',
+    production: 'https://wmtoslnew.argirov-gjorge.workers.dev/upload'
   },
   
   // File upload limits
