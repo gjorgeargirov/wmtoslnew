@@ -1040,42 +1040,47 @@ async function saveProject(event, projectId) {
     return;
   }
   
-  if (projectId) {
-    // Edit existing project
-    const result = updateProject(projectId, {
-      name: name,
-      description: description
-    });
-    
-    if (result.success) {
-      showToast('Project updated successfully!', 'success');
-      closeModal('projectModal');
-      loadProjectsTable();
-      // Refresh project dropdowns if migration wizard is open
-      if (typeof populateProjectDropdown === 'function') {
-        populateProjectDropdown();
+  try {
+    if (projectId) {
+      // Edit existing project
+      const result = await Promise.resolve(updateProject(projectId, {
+        name: name,
+        description: description
+      }));
+      
+      if (result && result.success) {
+        showToast('Project updated successfully!', 'success');
+        closeModal('projectModal');
+        await loadProjectsTable();
+        // Refresh project dropdowns if migration wizard is open
+        if (typeof populateProjectDropdown === 'function') {
+          await populateProjectDropdown();
+        }
+      } else {
+        showProjectFormError(result?.error || 'Failed to update project');
       }
     } else {
-      showProjectFormError(result.error || 'Failed to update project');
-    }
-  } else {
-    // Add new project
-    const result = addProject({
-      name: name,
-      description: description
-    });
-    
-    if (result.success) {
-      showToast('Project added successfully!', 'success');
-      closeModal('projectModal');
-      loadProjectsTable();
-      // Refresh project dropdowns if migration wizard is open
-      if (typeof populateProjectDropdown === 'function') {
-        populateProjectDropdown();
+      // Add new project
+      const result = await Promise.resolve(addProject({
+        name: name,
+        description: description
+      }));
+      
+      if (result && result.success) {
+        showToast('Project added successfully!', 'success');
+        closeModal('projectModal');
+        await loadProjectsTable();
+        // Refresh project dropdowns if migration wizard is open
+        if (typeof populateProjectDropdown === 'function') {
+          await populateProjectDropdown();
+        }
+      } else {
+        showProjectFormError(result?.error || 'Failed to add project');
       }
-    } else {
-      showProjectFormError(result.error || 'Failed to add project');
     }
+  } catch (error) {
+    console.error('Error saving project:', error);
+    showProjectFormError('Failed to save project: ' + error.message);
   }
 }
 
@@ -1094,19 +1099,25 @@ async function deleteProjectConfirm(projectId) {
     u.projects && u.projects.includes(project.name)
   );
   
-  const confirmDelete = () => {
-    const result = deleteProject(projectId);
-    if (result.success) {
-      users.forEach(user => {
-        if (user.projects && user.projects.includes(project.name)) {
-          user.projects = user.projects.filter(p => p !== project.name);
-          updateUser(user.id, { projects: user.projects });
+  const confirmDelete = async () => {
+    try {
+      const result = await Promise.resolve(deleteProject(projectId));
+      if (result && result.success) {
+        // Update users who had this project assigned
+        for (const user of users) {
+          if (user.projects && user.projects.includes(project.name)) {
+            const updatedProjects = user.projects.filter(p => p !== project.name);
+            await Promise.resolve(updateUser(user.id, { projects: updatedProjects }));
+          }
         }
-      });
-      showToast('Project deleted successfully!', 'success');
-      loadProjectsTable();
-    } else {
-      showToast(result.error || 'Failed to delete project', 'error');
+        showToast('Project deleted successfully!', 'success');
+        await loadProjectsTable();
+      } else {
+        showToast(result?.error || 'Failed to delete project', 'error');
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      showToast('Failed to delete project: ' + error.message, 'error');
     }
   };
   

@@ -87,6 +87,21 @@ const projectAPI = {
       body: JSON.stringify(projectData),
     });
   },
+
+  // Update project
+  async updateProject(projectId, projectData) {
+    return apiRequest(`/api/projects/${projectId}`, {
+      method: 'PUT',
+      body: JSON.stringify(projectData),
+    });
+  },
+
+  // Delete project
+  async deleteProject(projectId) {
+    return apiRequest(`/api/projects/${projectId}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 // Make API client globally available IMMEDIATELY

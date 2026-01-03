@@ -584,7 +584,26 @@ function getProjectByName(projectName) {
   return projects.find(p => p.name === projectName);
 }
 
-function addProject(projectData) {
+async function addProject(projectData) {
+  // Try API first
+  if (USE_API && window.projectAPI) {
+    try {
+      const result = await window.projectAPI.createProject(projectData);
+      console.log('✅ Project created in database');
+      return { success: true, project: result.project || { id: result.id, ...projectData } };
+    } catch (error) {
+      console.error('❌ API addProject failed:', error.message);
+      if (IS_PRODUCTION) {
+        return { success: false, error: `Failed to create project: ${error.message}` };
+      }
+      console.warn('⚠️ API addProject failed, falling back to localStorage (development):', error);
+      // Fall through to localStorage
+    }
+  } else if (IS_PRODUCTION) {
+    return { success: false, error: 'API client not available in production' };
+  }
+  
+  // Fallback to localStorage (development only)
   const projects = loadProjects();
   const nextId = projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1;
   
@@ -602,7 +621,26 @@ function addProject(projectData) {
   }
 }
 
-function updateProject(projectId, projectData) {
+async function updateProject(projectId, projectData) {
+  // Try API first
+  if (USE_API && window.projectAPI) {
+    try {
+      await window.projectAPI.updateProject(projectId, projectData);
+      console.log('✅ Project updated in database');
+      return { success: true, project: { id: projectId, ...projectData } };
+    } catch (error) {
+      console.error('❌ API updateProject failed:', error.message);
+      if (IS_PRODUCTION) {
+        return { success: false, error: `Failed to update project: ${error.message}` };
+      }
+      console.warn('⚠️ API updateProject failed, falling back to localStorage (development):', error);
+      // Fall through to localStorage
+    }
+  } else if (IS_PRODUCTION) {
+    return { success: false, error: 'API client not available in production' };
+  }
+  
+  // Fallback to localStorage (development only)
   const projects = loadProjects();
   const index = projects.findIndex(p => p.id === projectId);
   
@@ -623,7 +661,26 @@ function updateProject(projectId, projectData) {
   }
 }
 
-function deleteProject(projectId) {
+async function deleteProject(projectId) {
+  // Try API first
+  if (USE_API && window.projectAPI) {
+    try {
+      await window.projectAPI.deleteProject(projectId);
+      console.log('✅ Project deleted from database');
+      return { success: true };
+    } catch (error) {
+      console.error('❌ API deleteProject failed:', error.message);
+      if (IS_PRODUCTION) {
+        return { success: false, error: `Failed to delete project: ${error.message}` };
+      }
+      console.warn('⚠️ API deleteProject failed, falling back to localStorage (development):', error);
+      // Fall through to localStorage
+    }
+  } else if (IS_PRODUCTION) {
+    return { success: false, error: 'API client not available in production' };
+  }
+  
+  // Fallback to localStorage (development only)
   const projects = loadProjects();
   const index = projects.findIndex(p => p.id === projectId);
   
