@@ -260,12 +260,24 @@ function updateUserStats(users) {
 }
 
 // View user details
-function viewUser(userId) {
-  const users = getUsers();
+async function viewUser(userId) {
+  const users = await Promise.resolve(getAllUsers());
+  if (!Array.isArray(users)) {
+    showToast('Failed to load users', 'error');
+    return;
+  }
   const user = users.find(u => u.id === userId);
   if (!user) {
     showToast('User not found', 'error');
     return;
+  }
+  
+  // Normalize projects: handle both object arrays and string arrays
+  let projectNames = [];
+  if (user.projects && Array.isArray(user.projects)) {
+    projectNames = user.projects.map(project => {
+      return typeof project === 'object' && project !== null ? project.name : project;
+    }).filter(name => name);
   }
   
   const modal = document.getElementById('userModal');
@@ -304,15 +316,15 @@ function viewUser(userId) {
       <div class="detail-row">
         <label>Projects:</label>
         <div class="permissions-grid">
-          ${(user.projects && user.projects.length > 0) 
-            ? user.projects.map(p => `<span class="permission-tag">${escapeHtml(p)}</span>`).join('') 
+          ${projectNames.length > 0
+            ? projectNames.map(p => `<span class="permission-tag">${escapeHtml(p)}</span>`).join('') 
             : '<span class="permission-tag">No projects assigned</span>'}
         </div>
       </div>
       <div class="detail-row">
         <label>Permissions:</label>
         <div class="permissions-grid">
-          ${user.permissions.map(p => `<span class="permission-tag">${p}</span>`).join('')}
+          ${(user.permissions && Array.isArray(user.permissions) ? user.permissions : []).map(p => `<span class="permission-tag">${p}</span>`).join('')}
         </div>
       </div>
     </div>
@@ -1409,6 +1421,7 @@ window.deleteProjectConfirm = deleteProjectConfirm;
 window.loadMigrationsTable = loadMigrationsTable;
 window.deleteMigration = deleteMigration;
 window.deleteAllMigrations = deleteAllMigrations;
+window.viewUser = viewUser;
 window.addNewUser = addNewUser;
 window.editUser = editUser;
 window.saveUser = saveUser;
