@@ -1,5 +1,5 @@
 # Cloudflare Worker configuration
-name = "migration-accelerator-proxy"
+name = "wmtoslnew"
 main = "worker.js"
 compatibility_date = "2024-01-01"
 
@@ -13,5 +13,6 @@ vars = { SNAPLOGIC_URL = "https://emea.snaplogic.com/api/1/rest/slsched/feed/ptn
 vars = { SNAPLOGIC_URL = "https://emea.snaplogic.com/api/1/rest/slsched/feed/ptnrIWConnect/Accelerator/Initial/01_WM.SL_Initialization_API" }
 
 # Worker limits
-[limits]
-cpu_ms = 50000  # 50 seconds CPU time limit
+# Note: CPU limits are not supported on the Free plan
+# [limits]
+# cpu_ms = 50000  # 50 seconds CPU time limit (requires paid plan)
