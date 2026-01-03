@@ -2279,6 +2279,36 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
+  // Refresh migrations button
+  const refreshMigrationsBtn = document.getElementById('refreshMigrationsBtn');
+  if (refreshMigrationsBtn) {
+    refreshMigrationsBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      // Add rotation animation
+      const svg = refreshMigrationsBtn.querySelector('svg');
+      if (svg) {
+        svg.style.transition = 'transform 0.5s';
+        svg.style.transform = 'rotate(360deg)';
+        setTimeout(() => {
+          svg.style.transform = 'rotate(0deg)';
+        }, 500);
+      }
+      
+      // Force refresh by clearing cached data and reloading
+      migrationHistory = [];
+      currentPage = 1;
+      updateRecentMigrations();
+      updateDashboardStats();
+      
+      // Show brief feedback
+      const originalTitle = refreshMigrationsBtn.title;
+      refreshMigrationsBtn.title = 'Refreshing...';
+      setTimeout(() => {
+        refreshMigrationsBtn.title = originalTitle;
+      }, 1000);
+    });
+  }
+  
   // Dashboard action card and button
   if (actionNewMigration) {
     actionNewMigration.addEventListener('click', function(e) {
