@@ -3,6 +3,14 @@ name = "wmtoslnew"
 main = "worker.js"
 compatibility_date = "2024-01-01"
 
+# D1 Database binding
+# Create the database first: npx wrangler d1 create wmtoslnew-db
+# Then run migrations: npx wrangler d1 execute wmtoslnew-db --file=./schema.sql
+[[d1_databases]]
+binding = "DB"
+database_name = "wmtoslnew-db"
+database_id = "" # Will be set after creating the database
+
 # Environment variables (set these in Cloudflare Dashboard or via CLI)
 # For security, set SNAPLOGIC_API_TOKEN in Cloudflare Dashboard:
 # Workers & Pages > Your Worker > Settings > Variables and Secrets

@@ -1,5 +1,5 @@
 // User Management System
-// Users are persisted in localStorage
+// Uses Cloudflare Worker API (D1 database) when available, falls back to localStorage
 
 // Default users (used only on first load)
 const DEFAULT_USERS = [
@@ -107,8 +107,25 @@ function refreshUsers() {
 // Initialize users on load
 let USERS = loadUsers();
 
-// Authenticate user
-function authenticateUser(email, password) {
+// Check if API is available
+let USE_API = false;
+let API_CLIENT = null;
+
+// Try to load API client
+try {
+  if (typeof userAPI !== 'undefined') {
+    API_CLIENT = userAPI;
+    USE_API = true;
+  } else if (window.userAPI) {
+    API_CLIENT = window.userAPI;
+    USE_API = true;
+  }
+} catch (e) {
+  console.log('API client not available, using localStorage fallback');
+}
+
+// Authenticate user - uses API if available, otherwise localStorage
+async function authenticateUser(email, password) {
   // Trim whitespace from inputs
   const trimmedEmail = (email || '').trim().toLowerCase();
   const trimmedPassword = (password || '').trim();
@@ -119,8 +136,19 @@ function authenticateUser(email, password) {
       error: "Email and password are required"
     };
   }
+
+  // Try API first
+  if (USE_API && API_CLIENT) {
+    try {
+      const result = await API_CLIENT.login(trimmedEmail, trimmedPassword);
+      return result;
+    } catch (error) {
+      console.warn('API login failed, falling back to localStorage:', error);
+      // Fall through to localStorage
+    }
+  }
   
-  // Always get fresh users from localStorage (don't use cache for authentication)
+  // Fallback to localStorage
   const users = loadUsers();
   
   if (!users || users.length === 0) {
@@ -173,13 +201,50 @@ function getUserByEmail(email) {
 }
 
 // Get all users (admin only) - returns without passwords
-function getAllUsers() {
+async function getAllUsers() {
+  // Try API first
+  if (USE_API && API_CLIENT) {
+    try {
+      const result = await API_CLIENT.getUsers();
+      return result.users || [];
+    } catch (error) {
+      console.warn('API getUsers failed, falling back to localStorage:', error);
+      // Fall through to localStorage
+    }
+  }
+  
+  // Fallback to localStorage
   const users = getUsers();
   return users.map(({ password, ...user }) => user);
 }
 
 // Add new user (admin only)
-function addUser(userData) {
+async function addUser(userData) {
+  // Try API first
+  if (USE_API && API_CLIENT) {
+    try {
+      // Convert projects array to project IDs
+      const projectIds = [];
+      if (userData.projects && Array.isArray(userData.projects)) {
+        const allProjects = await getAllProjects();
+        for (const projectName of userData.projects) {
+          const project = allProjects.find(p => p.name === projectName);
+          if (project) projectIds.push(project.id);
+        }
+      }
+      
+      const result = await API_CLIENT.createUser({
+        ...userData,
+        projects: projectIds
+      });
+      return { success: true, id: result.id };
+    } catch (error) {
+      console.warn('API addUser failed, falling back to localStorage:', error);
+      // Fall through to localStorage
+    }
+  }
+  
+  // Fallback to localStorage
   const users = getUsers();
   
   // Check if email already exists
@@ -206,7 +271,31 @@ function addUser(userData) {
 }
 
 // Update existing user (admin only)
-function updateUser(userId, userData) {
+async function updateUser(userId, userData) {
+  // Try API first
+  if (USE_API && API_CLIENT) {
+    try {
+      // Convert projects array to project IDs if needed
+      if (userData.projects && Array.isArray(userData.projects) && userData.projects.length > 0 && typeof userData.projects[0] === 'string') {
+        const allProjects = await getAllProjects();
+        const projectIds = userData.projects
+          .map(projectName => {
+            const project = allProjects.find(p => p.name === projectName);
+            return project ? project.id : null;
+          })
+          .filter(id => id !== null);
+        userData.projects = projectIds;
+      }
+      
+      await API_CLIENT.updateUser(userId, userData);
+      return { success: true };
+    } catch (error) {
+      console.warn('API updateUser failed, falling back to localStorage:', error);
+      // Fall through to localStorage
+    }
+  }
+  
+  // Fallback to localStorage
   const users = getUsers();
   const index = users.findIndex(u => u.id === userId);
   
@@ -243,7 +332,19 @@ function updateUser(userId, userData) {
 }
 
 // Delete user (admin only)
-function deleteUserById(userId) {
+async function deleteUserById(userId) {
+  // Try API first
+  if (USE_API && API_CLIENT) {
+    try {
+      await API_CLIENT.deleteUser(userId);
+      return { success: true };
+    } catch (error) {
+      console.warn('API deleteUser failed, falling back to localStorage:', error);
+      // Fall through to localStorage
+    }
+  }
+  
+  // Fallback to localStorage
   const users = getUsers();
   const index = users.findIndex(u => u.id === userId);
   
@@ -286,7 +387,19 @@ function saveProjects(projects) {
   }
 }
 
-function getAllProjects() {
+async function getAllProjects() {
+  // Try API first
+  if (USE_API && window.projectAPI) {
+    try {
+      const result = await window.projectAPI.getProjects();
+      return result.projects || [];
+    } catch (error) {
+      console.warn('API getProjects failed, falling back to localStorage:', error);
+      // Fall through to localStorage
+    }
+  }
+  
+  // Fallback to localStorage
   return loadProjects();
 }
 

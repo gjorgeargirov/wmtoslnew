@@ -22,11 +22,8 @@ function handleLogin(event) {
   loginBtn.classList.add("loading");
   loginBtn.textContent = "";
 
-  // Simulate API call
-  setTimeout(() => {
-    // Authenticate user (uses users.js)
-    const authResult = authenticateUser(email, password);
-    
+  // Authenticate user (uses users.js - now async)
+  authenticateUser(email, password).then(authResult => {
     if (authResult.success) {
       // Store auth token (in real app, use secure httpOnly cookies)
       if (remember) {
@@ -50,7 +47,12 @@ function handleLogin(event) {
       loginBtn.textContent = "Sign In";
       showError(authResult.error || "Invalid email or password. Please try again.");
     }
-  }, 1500);
+  }).catch(error => {
+    // Handle errors
+    loginBtn.classList.remove("loading");
+    loginBtn.textContent = "Sign In";
+    showError(error.message || "Login failed. Please try again.");
+  });
 }
 
 // Handle SSO login
