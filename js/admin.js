@@ -680,7 +680,7 @@ function hideFormError() {
 }
 
 // Save user (add or edit)
-function saveUser(event, userId) {
+async function saveUser(event, userId) {
   event.preventDefault();
   
   // Clear any previous errors
@@ -727,11 +727,17 @@ function saveUser(event, userId) {
     // New avatar uploaded
     avatar = avatarInput.getAttribute('data-avatar-base64');
   } else if (userId) {
-    // Keep existing avatar if not changed
-    const users = getUsers();
-    const existingUser = users.find(u => u.id === userId);
-    if (existingUser && existingUser.avatar) {
-      avatar = existingUser.avatar;
+    // Keep existing avatar if not changed - need to get from API
+    try {
+      const users = await Promise.resolve(getAllUsers());
+      if (Array.isArray(users)) {
+        const existingUser = users.find(u => u.id === userId);
+        if (existingUser && existingUser.avatar) {
+          avatar = existingUser.avatar;
+        }
+      }
+    } catch (error) {
+      console.warn('Could not load existing user avatar:', error);
     }
   }
   
@@ -752,14 +758,19 @@ function saveUser(event, userId) {
       userData.password = password;
     }
     
-    const result = updateUser(userId, userData);
-    
-    if (result.success) {
-      showToast('User updated successfully!', 'success');
-      closeModal('userModal');
-      loadUsersTable();
-    } else {
-      showFormError(result.error || 'Failed to update user');
+    try {
+      const result = await Promise.resolve(updateUser(userId, userData));
+      
+      if (result && result.success) {
+        showToast('User updated successfully!', 'success');
+        closeModal('userModal');
+        loadUsersTable();
+      } else {
+        showFormError(result?.error || 'Failed to update user');
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      showFormError('Failed to update user: ' + error.message);
     }
   } else {
     // Add new user
@@ -786,14 +797,19 @@ function saveUser(event, userId) {
       projects: projects
     };
     
-    const result = addUser(userData);
-    
-    if (result.success) {
-      showToast('User added successfully!', 'success');
-      closeModal('userModal');
-      loadUsersTable();
-    } else {
-      showFormError(result.error || 'Failed to add user');
+    try {
+      const result = await Promise.resolve(addUser(userData));
+      
+      if (result && result.success) {
+        showToast('User added successfully!', 'success');
+        closeModal('userModal');
+        loadUsersTable();
+      } else {
+        showFormError(result?.error || 'Failed to add user');
+      }
+    } catch (error) {
+      console.error('Error adding user:', error);
+      showFormError('Failed to add user: ' + error.message);
     }
   }
 }
@@ -1322,6 +1338,5 @@ window.deleteMigration = deleteMigration;
 window.deleteAllMigrations = deleteAllMigrations;
 window.addNewUser = addNewUser;
 window.editUser = editUser;
-window.addNewUser = addNewUser;
-window.editUser = editUser;
+window.saveUser = saveUser;
 
