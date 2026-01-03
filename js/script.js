@@ -541,6 +541,7 @@ async function updateRecentMigrations() {
   });
   
   // Add current migration if in progress and user has access
+  // BUT only if it doesn't already exist in the loaded migrations (to avoid duplication)
   if ((migrationInProgress && uploadedFile) || currentMigration) {
     // Ensure in-progress migration has execution ID
     if (currentMigration && !currentMigration.executionId) {
@@ -557,10 +558,20 @@ async function updateRecentMigrations() {
       project: document.getElementById('migrationProject')?.value || 'Unassigned'
     };
     
-    // Only add in-progress migration if user has access to its project
-    if (userProjectNames === null || 
-        !inProgressMigration.project || 
-        userProjectNames.includes(inProgressMigration.project)) {
+    // Check if this migration already exists in the loaded migrations (by executionId)
+    const executionId = inProgressMigration.executionId;
+    const alreadyExists = filteredMigrations.some(m => 
+      m.executionId === executionId || 
+      (m.execution_id === executionId) // Handle both formats
+    );
+    
+    // Only add in-progress migration if:
+    // 1. It doesn't already exist in the loaded migrations
+    // 2. User has access to its project
+    if (!alreadyExists && 
+        (userProjectNames === null || 
+         !inProgressMigration.project || 
+         userProjectNames.includes(inProgressMigration.project))) {
       filteredMigrations.push(inProgressMigration);
     }
   }
@@ -918,28 +929,36 @@ async function saveMigrationToHistory(fileName, status, message = '', duration =
   };
   
   // Try to save to database via API
+  // The API will automatically update if a migration with the same executionId exists
   if (window.migrationDBAPI && userId) {
     try {
       const startTime = currentMigration?.startTime ? new Date(currentMigration.startTime).toISOString() : new Date().toISOString();
       const endTime = new Date().toISOString();
       
+      // Convert status format: in-progress -> in_progress for database
+      let dbStatus = status;
+      if (status === 'in-progress') {
+        dbStatus = 'in_progress';
+      }
+      
+      // Use createMigration - the API will update if executionId already exists
       await window.migrationDBAPI.createMigration({
         executionId: executionId,
         userId: userId,
         projectId: projectId,
         fileName: fileName,
-        status: status,
+        status: dbStatus,
         startTime: startTime,
         endTime: endTime,
-        duration: duration,
+        duration: duration ? Math.floor(duration / 1000) : null, // Convert milliseconds to seconds
         resultData: {
           message: message,
           fileName: fileName,
-          status: status
+          status: status // Keep frontend format in resultData
         }
       });
       
-      console.log('✅ Migration saved to database');
+      console.log('✅ Migration saved/updated in database');
     } catch (error) {
       console.error('❌ Failed to save migration to database:', error);
       // Fall through to localStorage
@@ -1751,8 +1770,6 @@ async function startMigration() {
         new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBjGH0fPTgjMGHm7A7+OZSA0PVqzn77BdGAw+ltryxnMpBSh+zPLaizsIGGS57Oiiw==').play();
       } catch (e) {}
       
-      migrationInProgress = false;
-      
       // Hide cancel button when migration completes
       const cancelBtn = document.getElementById('btnCancelMigration');
       if (cancelBtn) {
@@ -1767,8 +1784,15 @@ async function startMigration() {
         ? Date.now() - currentMigration.startTime 
         : null;
       
-      // Save to history
-      saveMigrationToHistory(uploadedFile.name, 'success', 'Migration completed successfully', duration);
+      // Save to history (this will update the database migration status)
+      await saveMigrationToHistory(uploadedFile.name, 'success', 'Migration completed successfully', duration);
+      
+      // Clear migration state after saving
+      migrationInProgress = false;
+      if (localStorage.getItem('currentMigration')) {
+        localStorage.removeItem('currentMigration');
+      }
+      currentMigration = null;
       
       // Check preferences for notifications and auto-navigate
       const preferences = JSON.parse(localStorage.getItem('userPreferences') || '{}');
@@ -1835,8 +1859,14 @@ async function startMigration() {
         ? Date.now() - currentMigration.startTime 
         : null;
       
-      // Save to history
-      saveMigrationToHistory(uploadedFile.name, 'success', 'Migration completed successfully', duration);
+      // Save to history (this will update the database migration status)
+      await saveMigrationToHistory(uploadedFile.name, 'success', 'Migration completed successfully', duration);
+      
+      // Clear migration state after saving
+      if (localStorage.getItem('currentMigration')) {
+        localStorage.removeItem('currentMigration');
+      }
+      currentMigration = null;
       
       // Show success toast notification
       showToast('Migration Complete! ✨', 'Your migration finished successfully. For details, go to Dashboard.', 'success');
@@ -1935,14 +1965,14 @@ async function startMigration() {
       ? Date.now() - currentMigration.startTime 
       : null;
     
-    // Save to history with duration
-    saveMigrationToHistory(fileName, 'failed', errorMsg, duration);
+    // Save to history with duration (this will update the database migration status)
+    await saveMigrationToHistory(fileName, 'failed', errorMsg, duration);
     
     // NOW clear migration state
     if (localStorage.getItem('currentMigration')) {
       localStorage.removeItem('currentMigration');
-      currentMigration = null;
     }
+    currentMigration = null;
     
     // Show error notification - user stays on current view
     showToast('Migration Failed ❌', errorMsg, 'error');
