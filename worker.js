@@ -8,6 +8,9 @@ const SNAPLOGIC_URL = 'https://emea.snaplogic.com/api/1/rest/slsched/feed/ptnrIW
 
 export default {
   async fetch(request, env) {
+    const url = new URL(request.url);
+    const pathname = url.pathname;
+
     // Handle CORS preflight requests
     if (request.method === 'OPTIONS') {
       return new Response(null, {
@@ -21,8 +24,27 @@ export default {
       });
     }
 
+    // Provide helpful message for GET requests to /upload
+    if (request.method === 'GET' && pathname === '/upload') {
+      return new Response(
+        JSON.stringify({
+          message: 'This endpoint only accepts POST requests',
+          usage: 'Send a POST request with your file data to /upload',
+          worker: 'wmtoslnew',
+        }),
+        {
+          status: 405,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Allow': 'POST, OPTIONS',
+          },
+        }
+      );
+    }
+
     // Only handle POST requests to /upload
-    if (request.method === 'POST' && (request.url.endsWith('/upload') || request.url.includes('/upload'))) {
+    if (request.method === 'POST' && pathname === '/upload') {
       try {
         // Get API token from environment variable (set in Cloudflare dashboard)
         const apiToken = env.SNAPLOGIC_API_TOKEN || env.API_TOKEN;
