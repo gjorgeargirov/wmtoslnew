@@ -94,5 +94,40 @@ window.userAPI = userAPI;
 window.projectAPI = projectAPI;
 window.API_BASE_URL = API_BASE_URL;
 
+// Diagnostic function to test API connectivity
+window.testAPI = async function() {
+  console.log('🔍 Testing API connectivity...');
+  console.log('📍 API Base URL:', API_BASE_URL);
+  
+  try {
+    // Test a simple GET request
+    const response = await fetch(`${API_BASE_URL}/api/users`);
+    console.log('✅ API Response Status:', response.status);
+    console.log('✅ API Response Headers:', Object.fromEntries(response.headers.entries()));
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ API is working! Users count:', data.users?.length || 0);
+      return { success: true, message: 'API is working correctly' };
+    } else {
+      const errorText = await response.text();
+      console.error('❌ API returned error:', response.status, errorText);
+      return { success: false, message: `API error: ${response.status} - ${errorText}` };
+    }
+  } catch (error) {
+    console.error('❌ API test failed:', error);
+    return { success: false, message: `API test failed: ${error.message}` };
+  }
+};
+
+// Auto-test API on load in production
+if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      window.testAPI();
+    }, 1000);
+  });
+}
+
 // Export API base URL for config (for ES modules)
 export { API_BASE_URL };

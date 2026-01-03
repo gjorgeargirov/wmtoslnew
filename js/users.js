@@ -111,23 +111,65 @@ let USERS = loadUsers();
 let USE_API = false;
 let API_CLIENT = null;
 
+// Detect if we're in production (not localhost)
+const IS_PRODUCTION = window.location.hostname !== 'localhost' && 
+                      window.location.hostname !== '127.0.0.1' &&
+                      !window.location.hostname.includes('.local');
+
 // Try to load API client (check after a short delay to ensure api-client.js has loaded)
 function initializeAPIClient() {
   try {
     if (typeof userAPI !== 'undefined') {
       API_CLIENT = userAPI;
       USE_API = true;
-      console.log('API client loaded - will use database API');
+      console.log('✅ API client loaded - will use database API');
+      if (IS_PRODUCTION) {
+        console.log('🌐 Production mode: API is required, localStorage fallback disabled');
+      }
     } else if (window.userAPI) {
       API_CLIENT = window.userAPI;
       USE_API = true;
-      console.log('API client loaded - will use database API');
+      console.log('✅ API client loaded - will use database API');
+      if (IS_PRODUCTION) {
+        console.log('🌐 Production mode: API is required, localStorage fallback disabled');
+      }
     } else {
-      console.log('API client not available - using localStorage fallback');
+      if (IS_PRODUCTION) {
+        console.error('❌ API client not available in production! Check that api-client.js is loaded.');
+      } else {
+        console.log('⚠️ API client not available - using localStorage fallback (local development)');
+      }
     }
   } catch (e) {
-    console.log('API client not available, using localStorage fallback:', e);
+    if (IS_PRODUCTION) {
+      console.error('❌ API client initialization failed:', e);
+    } else {
+      console.log('⚠️ API client not available, using localStorage fallback:', e);
+    }
   }
+}
+
+// Clear localStorage in production to force database usage
+if (IS_PRODUCTION && typeof window !== 'undefined') {
+  // Only clear if we're sure API is available
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      if (USE_API && API_CLIENT) {
+        // Clear old localStorage data to force database usage
+        const keysToRemove = ['users', 'projects', 'currentUser'];
+        let cleared = false;
+        keysToRemove.forEach(key => {
+          if (localStorage.getItem(key)) {
+            localStorage.removeItem(key);
+            cleared = true;
+          }
+        });
+        if (cleared) {
+          console.log('🧹 Cleared localStorage in production - using database only');
+        }
+      }
+    }, 500);
+  });
 }
 
 // Initialize immediately and also after a short delay (in case script loads after)
@@ -136,6 +178,7 @@ if (typeof window !== 'undefined') {
   window.addEventListener('load', initializeAPIClient);
   // Also try after a short delay
   setTimeout(initializeAPIClient, 100);
+  setTimeout(initializeAPIClient, 500);
 }
 
 // Authenticate user - uses API if available, otherwise localStorage
@@ -155,19 +198,30 @@ async function authenticateUser(email, password) {
   if (USE_API && API_CLIENT) {
     try {
       const result = await API_CLIENT.login(trimmedEmail, trimmedPassword);
+      console.log('✅ Login via API successful');
       return result;
     } catch (error) {
-      console.warn('API login failed, falling back to localStorage:', error.message);
-      // Disable API if server is not available
-      if (error.message.includes('not available') || error.message.includes('Failed to fetch')) {
-        USE_API = false;
-        console.log('API server not available - disabled API, using localStorage only');
+      console.error('❌ API login failed:', error.message);
+      // In production, don't fall back - show error instead
+      if (IS_PRODUCTION) {
+        return {
+          success: false,
+          error: `Database connection failed: ${error.message}. Please check that Pages Functions are deployed and D1 binding is configured.`
+        };
       }
+      // In development, allow fallback
+      console.warn('⚠️ API login failed, falling back to localStorage (development mode):', error.message);
       // Fall through to localStorage
     }
+  } else if (IS_PRODUCTION) {
+    // In production, API must be available
+    return {
+      success: false,
+      error: 'API client not available. Please ensure Pages Functions are deployed correctly.'
+    };
   }
   
-  // Fallback to localStorage
+  // Fallback to localStorage (development only)
   const users = loadUsers();
   
   if (!users || users.length === 0) {
@@ -261,11 +315,18 @@ async function addUser(userData) {
         ...userData,
         projects: projectIds
       });
+      console.log('✅ User created in database');
       return { success: true, id: result.id };
     } catch (error) {
-      console.warn('API addUser failed, falling back to localStorage:', error);
+      console.error('❌ API addUser failed:', error.message);
+      if (IS_PRODUCTION) {
+        return { success: false, error: `Failed to create user: ${error.message}` };
+      }
+      console.warn('⚠️ API addUser failed, falling back to localStorage (development):', error);
       // Fall through to localStorage
     }
+  } else if (IS_PRODUCTION) {
+    return { success: false, error: 'API client not available in production' };
   }
   
   // Fallback to localStorage
@@ -312,11 +373,18 @@ async function updateUser(userId, userData) {
       }
       
       await API_CLIENT.updateUser(userId, userData);
+      console.log('✅ User updated in database');
       return { success: true };
     } catch (error) {
-      console.warn('API updateUser failed, falling back to localStorage:', error);
+      console.error('❌ API updateUser failed:', error.message);
+      if (IS_PRODUCTION) {
+        return { success: false, error: `Failed to update user: ${error.message}` };
+      }
+      console.warn('⚠️ API updateUser failed, falling back to localStorage (development):', error);
       // Fall through to localStorage
     }
+  } else if (IS_PRODUCTION) {
+    return { success: false, error: 'API client not available in production' };
   }
   
   // Fallback to localStorage
@@ -361,11 +429,18 @@ async function deleteUserById(userId) {
   if (USE_API && API_CLIENT) {
     try {
       await API_CLIENT.deleteUser(userId);
+      console.log('✅ User deleted from database');
       return { success: true };
     } catch (error) {
-      console.warn('API deleteUser failed, falling back to localStorage:', error);
+      console.error('❌ API deleteUser failed:', error.message);
+      if (IS_PRODUCTION) {
+        return { success: false, error: `Failed to delete user: ${error.message}` };
+      }
+      console.warn('⚠️ API deleteUser failed, falling back to localStorage (development):', error);
       // Fall through to localStorage
     }
+  } else if (IS_PRODUCTION) {
+    return { success: false, error: 'API client not available in production' };
   }
   
   // Fallback to localStorage
@@ -417,16 +492,24 @@ function getAllProjects() {
     return (async () => {
       try {
         const result = await window.projectAPI.getProjects();
+        console.log('✅ Loaded projects from database:', result.projects?.length || 0);
         return result.projects || [];
       } catch (error) {
-        console.warn('API getProjects failed, falling back to localStorage:', error);
-        // Fall through to localStorage
+        console.error('❌ API getProjects failed:', error.message);
+        if (IS_PRODUCTION) {
+          return [];
+        }
+        console.warn('⚠️ API getProjects failed, falling back to localStorage (development):', error);
         return loadProjects();
       }
     })();
   }
   
-  // Synchronous localStorage fallback
+  // Synchronous localStorage fallback (development only)
+  if (IS_PRODUCTION) {
+    console.error('❌ API client not available in production');
+    return [];
+  }
   return loadProjects();
 }
 
