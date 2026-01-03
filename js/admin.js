@@ -58,15 +58,19 @@ function initializeAdminAccess() {
     // If permissions are missing, try to get them from users array
     let permissions = userData.permissions;
     if (!permissions && typeof getAllUsers === 'function') {
-      const users = getAllUsers();
-      const fullUser = users.find(u => u.email === userData.email);
-      if (fullUser && fullUser.permissions) {
-        permissions = fullUser.permissions;
-        // Update sessionStorage with complete user data
-        const updatedUser = { ...userData, permissions: permissions };
-        sessionStorage.setItem('user', JSON.stringify(updatedUser));
-        userData.permissions = permissions; // Update local variable too
-      }
+      // Handle both sync and async getAllUsers
+      Promise.resolve(getAllUsers()).then(users => {
+        const fullUser = users.find(u => u.email === userData.email);
+        if (fullUser && fullUser.permissions) {
+          permissions = fullUser.permissions;
+          // Update sessionStorage with complete user data
+          const updatedUser = { ...userData, permissions: permissions };
+          sessionStorage.setItem('user', JSON.stringify(updatedUser));
+          userData.permissions = permissions; // Update local variable too
+        }
+      }).catch(() => {
+        // Ignore errors in async lookup
+      });
     }
     
     // Check permissions using multiple methods
@@ -107,13 +111,25 @@ function initializeAdminAccess() {
 }
 
 // Load all users in the admin panel
-function loadUsersTable() {
+async function loadUsersTable() {
   const tbody = document.getElementById('usersTableBody');
   if (!tbody) return;
   
-  const users = getAllUsers();
+  // Show loading state
+  tbody.innerHTML = `
+    <tr class="empty-row">
+      <td colspan="6">
+        <div class="empty-state">
+          <p>Loading users...</p>
+        </div>
+      </td>
+    </tr>
+  `;
   
-  if (users.length === 0) {
+  // Handle both sync (localStorage) and async (API) cases
+  const users = await Promise.resolve(getAllUsers());
+  
+  if (!users || users.length === 0) {
     tbody.innerHTML = `
       <tr class="empty-row">
         <td colspan="6">
@@ -123,6 +139,7 @@ function loadUsersTable() {
         </td>
       </tr>
     `;
+    updateUserStats([]);
     return;
   }
   
@@ -171,6 +188,31 @@ function loadUsersTable() {
       </td>
     </tr>
   `).join('');
+  
+  // Update user statistics
+  updateUserStats(users);
+}
+
+// Update user statistics cards
+function updateUserStats(users) {
+  if (!users || !Array.isArray(users)) {
+    users = [];
+  }
+  
+  const totalUsers = users.length;
+  const admins = users.filter(u => u.role === 'Admin').length;
+  const regularUsers = users.filter(u => u.role === 'User').length;
+  const viewers = users.filter(u => u.role === 'Viewer').length;
+  
+  const totalEl = document.getElementById('adminStatTotal');
+  const adminsEl = document.getElementById('adminStatAdmins');
+  const usersEl = document.getElementById('adminStatUsers');
+  const viewersEl = document.getElementById('adminStatViewers');
+  
+  if (totalEl) totalEl.textContent = totalUsers;
+  if (adminsEl) adminsEl.textContent = admins;
+  if (usersEl) usersEl.textContent = regularUsers;
+  if (viewersEl) viewersEl.textContent = viewers;
 }
 
 // View user details
@@ -689,8 +731,8 @@ function saveUser(event, userId) {
 }
 
 // Delete user
-function deleteUser(userId) {
-  const users = getUsers();
+async function deleteUser(userId) {
+  const users = await Promise.resolve(getAllUsers());
   const user = users.find(u => u.id === userId);
   if (!user) {
     showToast('User not found', 'error');
@@ -698,7 +740,7 @@ function deleteUser(userId) {
   }
   
   // Prevent deleting yourself
-  const currentUser = JSON.parse(sessionStorage.getItem('user'));
+  const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
   if (currentUser.email === user.email) {
     showToast('You cannot delete your own account', 'error');
     return;
@@ -707,12 +749,12 @@ function deleteUser(userId) {
   showConfirmModal(
     'Delete User',
     `Are you sure you want to delete user "${user.name}"?\n\nThis action cannot be undone.`,
-    () => {
-      const result = deleteUserById(userId);
+    async () => {
+      const result = await deleteUserById(userId);
     
       if (result.success) {
         showToast('User deleted successfully', 'success');
-        loadUsersTable();
+        await loadUsersTable();
       } else {
         showToast(result.error || 'Failed to delete user', 'error');
       }
@@ -749,7 +791,9 @@ function switchAdminTab(tab) {
   document.getElementById('adminMigrationsTab').classList.toggle('hidden', tab !== 'migrations');
   
   // Load data for the selected tab
-  if (tab === 'projects') {
+  if (tab === 'users') {
+    loadUsersTable();
+  } else if (tab === 'projects') {
     loadProjectsTable();
   } else if (tab === 'migrations') {
     loadMigrationsTable();
@@ -944,8 +988,8 @@ function saveProject(event, projectId) {
 }
 
 // Delete project confirmation
-function deleteProjectConfirm(projectId) {
-  const projects = getAllProjects();
+async function deleteProjectConfirm(projectId) {
+  const projects = await Promise.resolve(getAllProjects());
   const project = projects.find(p => p.id === projectId);
   if (!project) {
     showToast('Project not found', 'error');
@@ -953,7 +997,7 @@ function deleteProjectConfirm(projectId) {
   }
   
   // Check if any users are assigned to this project
-  const users = getAllUsers();
+  const users = await Promise.resolve(getAllUsers());
   const usersWithProject = users.filter(u => 
     u.projects && u.projects.includes(project.name)
   );

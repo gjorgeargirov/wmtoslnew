@@ -2,8 +2,8 @@
 // Handles all API calls to the backend
 
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:8787' // Local development
-  : 'https://wmtoslnew.argirov-gjorge.workers.dev'; // Production
+  ? 'http://localhost:8787' // Local development (Worker)
+  : window.location.origin; // Production (Pages Functions - same origin)
 
 // Helper function to make API requests
 async function apiRequest(endpoint, options = {}) {
@@ -14,14 +14,24 @@ async function apiRequest(endpoint, options = {}) {
     },
   };
 
-  const response = await fetch(url, { ...defaultOptions, ...options });
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.error || `API request failed: ${response.status}`);
+  try {
+    const response = await fetch(url, { ...defaultOptions, ...options });
+    
+    // If fetch fails (network error), throw immediately
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
+      throw new Error(data.error || `API request failed: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    // Re-throw with more context
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      throw new Error('API server not available - using localStorage fallback');
+    }
+    throw error;
   }
-
-  return data;
 }
 
 // User API methods

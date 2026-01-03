@@ -111,17 +111,31 @@ let USERS = loadUsers();
 let USE_API = false;
 let API_CLIENT = null;
 
-// Try to load API client
-try {
-  if (typeof userAPI !== 'undefined') {
-    API_CLIENT = userAPI;
-    USE_API = true;
-  } else if (window.userAPI) {
-    API_CLIENT = window.userAPI;
-    USE_API = true;
+// Try to load API client (check after a short delay to ensure api-client.js has loaded)
+function initializeAPIClient() {
+  try {
+    if (typeof userAPI !== 'undefined') {
+      API_CLIENT = userAPI;
+      USE_API = true;
+      console.log('API client loaded - will use database API');
+    } else if (window.userAPI) {
+      API_CLIENT = window.userAPI;
+      USE_API = true;
+      console.log('API client loaded - will use database API');
+    } else {
+      console.log('API client not available - using localStorage fallback');
+    }
+  } catch (e) {
+    console.log('API client not available, using localStorage fallback:', e);
   }
-} catch (e) {
-  console.log('API client not available, using localStorage fallback');
+}
+
+// Initialize immediately and also after a short delay (in case script loads after)
+initializeAPIClient();
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', initializeAPIClient);
+  // Also try after a short delay
+  setTimeout(initializeAPIClient, 100);
 }
 
 // Authenticate user - uses API if available, otherwise localStorage
@@ -143,7 +157,12 @@ async function authenticateUser(email, password) {
       const result = await API_CLIENT.login(trimmedEmail, trimmedPassword);
       return result;
     } catch (error) {
-      console.warn('API login failed, falling back to localStorage:', error);
+      console.warn('API login failed, falling back to localStorage:', error.message);
+      // Disable API if server is not available
+      if (error.message.includes('not available') || error.message.includes('Failed to fetch')) {
+        USE_API = false;
+        console.log('API server not available - disabled API, using localStorage only');
+      }
       // Fall through to localStorage
     }
   }
@@ -201,19 +220,24 @@ function getUserByEmail(email) {
 }
 
 // Get all users (admin only) - returns without passwords
-async function getAllUsers() {
-  // Try API first
+// Can be called synchronously (localStorage) or asynchronously (API)
+function getAllUsers() {
+  // If API is available, return a promise
   if (USE_API && API_CLIENT) {
-    try {
-      const result = await API_CLIENT.getUsers();
-      return result.users || [];
-    } catch (error) {
-      console.warn('API getUsers failed, falling back to localStorage:', error);
-      // Fall through to localStorage
-    }
+    return (async () => {
+      try {
+        const result = await API_CLIENT.getUsers();
+        return result.users || [];
+      } catch (error) {
+        console.warn('API getUsers failed, falling back to localStorage:', error);
+        // Fall through to localStorage
+        const users = getUsers();
+        return users.map(({ password, ...user }) => user);
+      }
+    })();
   }
   
-  // Fallback to localStorage
+  // Synchronous localStorage fallback
   const users = getUsers();
   return users.map(({ password, ...user }) => user);
 }
@@ -226,7 +250,7 @@ async function addUser(userData) {
       // Convert projects array to project IDs
       const projectIds = [];
       if (userData.projects && Array.isArray(userData.projects)) {
-        const allProjects = await getAllProjects();
+        const allProjects = await Promise.resolve(getAllProjects());
         for (const projectName of userData.projects) {
           const project = allProjects.find(p => p.name === projectName);
           if (project) projectIds.push(project.id);
@@ -277,7 +301,7 @@ async function updateUser(userId, userData) {
     try {
       // Convert projects array to project IDs if needed
       if (userData.projects && Array.isArray(userData.projects) && userData.projects.length > 0 && typeof userData.projects[0] === 'string') {
-        const allProjects = await getAllProjects();
+        const allProjects = await Promise.resolve(getAllProjects());
         const projectIds = userData.projects
           .map(projectName => {
             const project = allProjects.find(p => p.name === projectName);
@@ -387,19 +411,22 @@ function saveProjects(projects) {
   }
 }
 
-async function getAllProjects() {
-  // Try API first
+function getAllProjects() {
+  // If API is available, return a promise
   if (USE_API && window.projectAPI) {
-    try {
-      const result = await window.projectAPI.getProjects();
-      return result.projects || [];
-    } catch (error) {
-      console.warn('API getProjects failed, falling back to localStorage:', error);
-      // Fall through to localStorage
-    }
+    return (async () => {
+      try {
+        const result = await window.projectAPI.getProjects();
+        return result.projects || [];
+      } catch (error) {
+        console.warn('API getProjects failed, falling back to localStorage:', error);
+        // Fall through to localStorage
+        return loadProjects();
+      }
+    })();
   }
   
-  // Fallback to localStorage
+  // Synchronous localStorage fallback
   return loadProjects();
 }
 

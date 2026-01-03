@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "description": "WebMethods to SnapLogic Migration Tool - Cloudflare Deployment",
   "scripts": {
+    "dev": "wrangler dev",
+    "dev:local-db": "wrangler d1 execute wmtoslnew-db --local --file=./schema.sql && wrangler dev",
     "deploy:worker": "wrangler deploy",
     "deploy:worker:staging": "wrangler deploy --env staging",
     "deploy:worker:production": "wrangler deploy --env production",
     "tail:worker": "wrangler tail",
     "deploy:pages": "wrangler pages deploy . --project-name=wmtoslnew",
-    "secret:set": "wrangler secret put SNAPLOGIC_API_TOKEN"
+    "secret:set": "wrangler secret put SNAPLOGIC_API_TOKEN",
+    "start:server": "python server/server.py"
   },
   "keywords": [
     "cloudflare",

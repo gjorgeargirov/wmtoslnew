@@ -41,8 +41,8 @@ const CONFIG = {
   
   PROXY_ENDPOINTS: {
     development: 'http://localhost:8001/upload',
-    staging: 'https://wmtoslnew.argirov-gjorge.workers.dev/upload',
-    production: 'https://wmtoslnew.argirov-gjorge.workers.dev/upload'
+    staging: window.location.origin + '/upload', // Pages Functions
+    production: window.location.origin + '/upload' // Pages Functions
   },
   
   // File upload limits

@@ -398,16 +398,21 @@ window.showAdmin = function() {
   loadAdminData();
 };
 
-function loadAdminData() {
-  // Load users table
-  loadUsersTable();
+async function loadAdminData() {
+  // Load users table (now async)
+  await loadUsersTable();
   
-  // Update stats
-  const users = getAllUsers();
-  document.getElementById('adminStatTotal').textContent = users.length;
-  document.getElementById('adminStatAdmins').textContent = users.filter(u => u.role === 'Admin').length;
-  document.getElementById('adminStatUsers').textContent = users.filter(u => u.role === 'User').length;
-  document.getElementById('adminStatViewers').textContent = users.filter(u => u.role === 'Viewer').length;
+  // Update stats (getAllUsers might return a Promise)
+  const users = await Promise.resolve(getAllUsers());
+  const totalEl = document.getElementById('adminStatTotal');
+  const adminsEl = document.getElementById('adminStatAdmins');
+  const usersEl = document.getElementById('adminStatUsers');
+  const viewersEl = document.getElementById('adminStatViewers');
+  
+  if (totalEl) totalEl.textContent = users.length || 0;
+  if (adminsEl) adminsEl.textContent = users.filter(u => u.role === 'Admin').length || 0;
+  if (usersEl) usersEl.textContent = users.filter(u => u.role === 'User').length || 0;
+  if (viewersEl) viewersEl.textContent = users.filter(u => u.role === 'Viewer').length || 0;
 }
 
 // Dashboard stats functions
