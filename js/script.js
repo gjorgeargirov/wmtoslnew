@@ -256,7 +256,7 @@ function resetWizardForNewMigration() {
 }
 
 // Populate project dropdown with user's accessible projects
-function populateProjectDropdown() {
+async function populateProjectDropdown() {
   const projectSelect = document.getElementById('migrationProject');
   if (!projectSelect) return;
   
@@ -268,12 +268,18 @@ function populateProjectDropdown() {
   
   // Get user's accessible projects
   let userProjects = [];
+  const allProjects = await Promise.resolve(getAllProjects());
+  
+  if (!Array.isArray(allProjects)) {
+    console.error('Failed to load projects');
+    return;
+  }
+  
   if (user.role === 'Admin' && hasPermission(user, 'admin')) {
     // Admins see all projects
-    userProjects = getAllProjects();
+    userProjects = allProjects;
   } else if (user.projects && Array.isArray(user.projects)) {
     // Regular users see only their assigned projects
-    const allProjects = getAllProjects();
     userProjects = allProjects.filter(p => user.projects.includes(p.name));
   }
   
@@ -1177,7 +1183,7 @@ function updateUserAvatar(avatar) {
 }
 
 // Step navigation
-function goToStep(step) {
+async function goToStep(step) {
   // Validation
   if (step === 2 && !uploadedFile) {
     showToast('File Required', 'Please upload a ZIP file first.', 'warning');
@@ -1185,7 +1191,7 @@ function goToStep(step) {
   }
   if (step === 2) {
     // Populate project dropdown when entering step 2
-    populateProjectDropdown();
+    await populateProjectDropdown();
   }
   if (step === 3) {
     const targetEnv = document.getElementById("targetEnv").value;

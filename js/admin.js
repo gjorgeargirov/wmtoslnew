@@ -10,8 +10,11 @@ function isAdmin() {
 }
 
 // Generate project checkboxes HTML
-function generateProjectCheckboxes(selectedProjects = []) {
-  const allProjects = getAllProjects();
+async function generateProjectCheckboxes(selectedProjects = []) {
+  const allProjects = await Promise.resolve(getAllProjects());
+  if (!Array.isArray(allProjects)) {
+    return '<p>Failed to load projects</p>';
+  }
   return allProjects.map(project => {
     const isChecked = selectedProjects.includes(project.name);
     return `
@@ -282,8 +285,12 @@ function viewUser(userId) {
 }
 
 // Edit user
-function editUser(userId) {
-  const users = getUsers();
+async function editUser(userId) {
+  const users = await Promise.resolve(getAllUsers());
+  if (!Array.isArray(users)) {
+    showToast('Failed to load users', 'error');
+    return;
+  }
   const user = users.find(u => u.id === userId);
   if (!user) {
     showToast('User not found', 'error');
@@ -293,6 +300,9 @@ function editUser(userId) {
   const modal = document.getElementById('userModal');
   const title = document.getElementById('userModalTitle');
   const content = document.getElementById('userModalContent');
+  
+  // Generate project checkboxes first
+  const projectCheckboxes = await generateProjectCheckboxes(user.projects || []);
   
   title.textContent = 'Edit User';
   content.innerHTML = `
@@ -344,7 +354,7 @@ function editUser(userId) {
       <div class="form-group">
         <label class="form-label">Projects</label>
         <div id="editUserProjects" class="projects-checkboxes">
-          ${generateProjectCheckboxes(user.projects || [])}
+          ${projectCheckboxes}
         </div>
         <small>Select projects this user can access. Admins automatically have access to all projects.</small>
       </div>
@@ -386,13 +396,26 @@ function editUser(userId) {
 }
 
 // Add new user
-function addNewUser() {
-  const modal = document.getElementById('userModal');
-  const title = document.getElementById('userModalTitle');
-  const content = document.getElementById('userModalContent');
-  
-  title.textContent = 'Add New User';
-  content.innerHTML = `
+async function addNewUser() {
+  console.log('addNewUser called');
+  try {
+    const modal = document.getElementById('userModal');
+    const title = document.getElementById('userModalTitle');
+    const content = document.getElementById('userModalContent');
+    
+    if (!modal || !title || !content) {
+      console.error('Modal elements not found');
+      showToast('Error: Modal elements not found', 'error');
+      return;
+    }
+    
+    console.log('Loading project checkboxes...');
+    // Generate project checkboxes first
+    const projectCheckboxes = await generateProjectCheckboxes([]);
+    console.log('Project checkboxes loaded:', projectCheckboxes.length, 'characters');
+    
+    title.textContent = 'Add New User';
+    content.innerHTML = `
     <form id="addUserForm" onsubmit="saveUser(event, null)">
       <div id="userFormError" class="error-message hidden" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 4px; margin-bottom: 1rem; border: 1px solid #f5c6cb;"></div>
       
@@ -440,7 +463,7 @@ function addNewUser() {
       <div class="form-group">
         <label class="form-label">Projects</label>
         <div id="editUserProjects" class="projects-checkboxes">
-          ${generateProjectCheckboxes([])}
+          ${projectCheckboxes}
         </div>
         <small>Select projects this user can access. Admins automatically have access to all projects.</small>
       </div>
@@ -478,7 +501,11 @@ function addNewUser() {
     </form>
   `;
   
-  modal.classList.remove('hidden');
+    modal.classList.remove('hidden');
+  } catch (error) {
+    console.error('Error in addNewUser:', error);
+    showToast('Failed to open add user form: ' + error.message, 'error');
+  }
 }
 
 // Update permissions based on selected role
@@ -779,7 +806,7 @@ function escapeHtml(text) {
 // ============================================
 
 // Switch between Users, Projects, and Migrations tabs
-function switchAdminTab(tab) {
+async function switchAdminTab(tab) {
   // Update tab buttons
   document.getElementById('adminTabUsers').classList.toggle('active', tab === 'users');
   document.getElementById('adminTabProjects').classList.toggle('active', tab === 'projects');
@@ -794,20 +821,20 @@ function switchAdminTab(tab) {
   if (tab === 'users') {
     loadUsersTable();
   } else if (tab === 'projects') {
-    loadProjectsTable();
+    await loadProjectsTable();
   } else if (tab === 'migrations') {
     loadMigrationsTable();
   }
 }
 
 // Load all projects in the admin panel
-function loadProjectsTable() {
+async function loadProjectsTable() {
   const tbody = document.getElementById('projectsTableBody');
   if (!tbody) return;
   
-  const projects = getAllProjects();
+  const projects = await Promise.resolve(getAllProjects());
   
-  if (projects.length === 0) {
+  if (!Array.isArray(projects) || projects.length === 0) {
     tbody.innerHTML = `
       <tr class="empty-row">
         <td colspan="4">
@@ -848,8 +875,12 @@ function loadProjectsTable() {
 }
 
 // Edit project
-function editProject(projectId) {
-  const projects = getAllProjects();
+async function editProject(projectId) {
+  const projects = await Promise.resolve(getAllProjects());
+  if (!Array.isArray(projects)) {
+    showToast('Failed to load projects', 'error');
+    return;
+  }
   const project = projects.find(p => p.id === projectId);
   if (!project) {
     showToast('Project not found', 'error');
@@ -917,7 +948,7 @@ function addNewProject() {
 }
 
 // Save project (add or edit)
-function saveProject(event, projectId) {
+async function saveProject(event, projectId) {
   event.preventDefault();
   
   // Clear any previous errors
@@ -937,7 +968,11 @@ function saveProject(event, projectId) {
   }
   
   // Check for duplicate names (excluding current project if editing)
-  const allProjects = getAllProjects();
+  const allProjects = await Promise.resolve(getAllProjects());
+  if (!Array.isArray(allProjects)) {
+    showProjectFormError('Failed to load projects');
+    return;
+  }
   const duplicate = allProjects.find(p => 
     p.name.toLowerCase() === name.toLowerCase() && 
     (!projectId || p.id !== projectId)
@@ -1244,4 +1279,8 @@ window.deleteProjectConfirm = deleteProjectConfirm;
 window.loadMigrationsTable = loadMigrationsTable;
 window.deleteMigration = deleteMigration;
 window.deleteAllMigrations = deleteAllMigrations;
+window.addNewUser = addNewUser;
+window.editUser = editUser;
+window.addNewUser = addNewUser;
+window.editUser = editUser;
 
