@@ -60,13 +60,19 @@ export async function onRequest(context) {
           status = 'in-progress';
         }
         
+        // Convert start_time to milliseconds timestamp for duration calculation
+        let startTimeMs = null;
+        if (migration.start_time) {
+          startTimeMs = new Date(migration.start_time).getTime();
+        }
+        
         return {
           id: migration.id,
           executionId: migration.execution_id,
           fileName: migration.file_name,
           status: status,
           timestamp: migration.start_time || migration.created_at,
-          startTime: migration.start_time,
+          startTime: startTimeMs, // Convert to milliseconds timestamp
           endTime: migration.end_time,
           duration: migration.duration ? migration.duration * 1000 : null, // Convert seconds to milliseconds
           user: migration.user_email,

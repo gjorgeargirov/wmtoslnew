@@ -555,9 +555,18 @@ async function updateRecentMigrations() {
       status: 'in-progress',
       message: 'Migration in progress...',
       timestamp: new Date().toISOString(),
+      startTime: Date.now(), // Add startTime for duration calculation
       executionId: Math.random().toString(36).substring(2, 10),
       project: document.getElementById('migrationProject')?.value || 'Unassigned'
     };
+    
+    // Ensure startTime is set (use currentMigration's startTime if available)
+    if (!inProgressMigration.startTime && currentMigration && currentMigration.startTime) {
+      inProgressMigration.startTime = currentMigration.startTime;
+    } else if (!inProgressMigration.startTime) {
+      // If no startTime, use timestamp or current time
+      inProgressMigration.startTime = inProgressMigration.timestamp ? new Date(inProgressMigration.timestamp).getTime() : Date.now();
+    }
     
     // Check if this migration already exists in the loaded migrations (by executionId)
     const executionId = inProgressMigration.executionId;
@@ -696,11 +705,21 @@ async function updateRecentMigrations() {
     
     // Calculate duration for in-progress migrations
     let durationDisplay = '00:00:00';
-    if (migration.status === 'in-progress' && migration.startTime) {
-      const elapsed = Date.now() - migration.startTime;
-      durationDisplay = formatDuration(elapsed);
+    if (migration.status === 'in-progress') {
+      // For in-progress migrations, calculate elapsed time
+      if (migration.startTime) {
+        const elapsed = Date.now() - migration.startTime;
+        durationDisplay = formatDuration(elapsed);
+      } else if (migration.timestamp) {
+        // Fallback: use timestamp if startTime not available
+        const elapsed = Date.now() - new Date(migration.timestamp).getTime();
+        durationDisplay = formatDuration(elapsed);
+      }
     } else if (migration.duration) {
-      durationDisplay = formatDuration(migration.duration);
+      // For completed migrations, use stored duration
+      // Handle both milliseconds and seconds
+      const durationMs = migration.duration > 1000000 ? migration.duration : migration.duration * 1000;
+      durationDisplay = formatDuration(durationMs);
     }
     
     // Get user email and execution ID (sanitize for security)
