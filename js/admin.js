@@ -1152,19 +1152,47 @@ function showProjectFormError(message) {
 // ============================================
 
 // Load all migrations in the admin panel
-function loadMigrationsTable() {
+async function loadMigrationsTable() {
   const tbody = document.getElementById('adminMigrationsTableBody');
   if (!tbody) return;
   
-  // Get migration history from localStorage
+  // Show loading state
+  tbody.innerHTML = `
+    <tr class="empty-row">
+      <td colspan="8">
+        <div class="empty-state">
+          <p>Loading migrations...</p>
+        </div>
+      </td>
+    </tr>
+  `;
+  
   let migrationHistory = [];
-  try {
-    const stored = localStorage.getItem('migrationHistory');
-    if (stored) {
-      migrationHistory = JSON.parse(stored);
+  
+  // Try to load from API first
+  if (window.migrationAPI) {
+    try {
+      const result = await window.migrationAPI.getMigrations();
+      if (result && Array.isArray(result.migrations)) {
+        migrationHistory = result.migrations;
+        console.log('✅ Loaded migrations from database:', migrationHistory.length);
+      }
+    } catch (error) {
+      console.error('❌ Failed to load migrations from API:', error);
+      // Fall through to localStorage
     }
-  } catch (e) {
-    console.error('Error loading migration history:', e);
+  }
+  
+  // Fallback to localStorage if API failed or not available
+  if (migrationHistory.length === 0) {
+    try {
+      const stored = localStorage.getItem('migrationHistory');
+      if (stored) {
+        migrationHistory = JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error('Error loading migration history from localStorage:', e);
+    }
   }
   
   if (migrationHistory.length === 0) {
@@ -1182,8 +1210,8 @@ function loadMigrationsTable() {
   
   // Sort by timestamp (newest first)
   const sortedMigrations = [...migrationHistory].sort((a, b) => {
-    const timeA = new Date(a.timestamp).getTime();
-    const timeB = new Date(b.timestamp).getTime();
+    const timeA = new Date(a.timestamp || a.startTime || a.created_at).getTime();
+    const timeB = new Date(b.timestamp || b.startTime || b.created_at).getTime();
     return timeB - timeA;
   });
   
@@ -1265,12 +1293,34 @@ function loadMigrationsTable() {
 }
 
 // Delete a single migration
-function deleteMigration(executionId) {
+async function deleteMigration(executionId) {
   showConfirmModal(
     'Delete Migration',
     'Are you sure you want to delete this migration record?',
-    () => {
+    async () => {
       try {
+        // Try to delete from database first
+        if (window.migrationAPI) {
+          try {
+            // Get all migrations to find the ID
+            const result = await window.migrationAPI.getMigrations();
+            if (result && Array.isArray(result.migrations)) {
+              const migration = result.migrations.find(m => m.executionId === executionId);
+              if (migration && migration.id) {
+                await window.migrationAPI.deleteMigration(migration.id);
+                console.log('✅ Migration deleted from database');
+                showToast('Migration deleted successfully!', 'success');
+                await loadMigrationsTable();
+                return;
+              }
+            }
+          } catch (error) {
+            console.error('❌ Failed to delete migration from database:', error);
+            // Fall through to localStorage
+          }
+        }
+        
+        // Fallback to localStorage
         let migrationHistory = [];
         const stored = localStorage.getItem('migrationHistory');
         if (stored) {
@@ -1284,7 +1334,7 @@ function deleteMigration(executionId) {
         if (migrationHistory.length < initialLength) {
           localStorage.setItem('migrationHistory', JSON.stringify(migrationHistory));
           showToast('Migration deleted successfully!', 'success');
-          loadMigrationsTable();
+          await loadMigrationsTable();
           
           // Refresh dashboard if it's visible
           if (typeof updateRecentMigrations === 'function') {
@@ -1305,7 +1355,7 @@ function deleteMigration(executionId) {
 }
 
 // Delete all migrations
-function deleteAllMigrations() {
+async function deleteAllMigrations() {
   showConfirmModal(
     'Delete All Migrations',
     '⚠️ WARNING: This will delete ALL migration history records. This action cannot be undone!\n\nAre you absolutely sure?',
@@ -1314,11 +1364,23 @@ function deleteAllMigrations() {
       showConfirmModal(
         'Final Confirmation',
         'This is your last chance. Delete ALL migration history?',
-        () => {
+        async () => {
           try {
+            // Try to delete from database first
+            if (window.migrationAPI) {
+              try {
+                await window.migrationAPI.deleteAllMigrations();
+                console.log('✅ All migrations deleted from database');
+              } catch (error) {
+                console.error('❌ Failed to delete migrations from database:', error);
+                // Fall through to localStorage
+              }
+            }
+            
+            // Also clear localStorage
             localStorage.removeItem('migrationHistory');
             showToast('All migration history deleted successfully!', 'success');
-            loadMigrationsTable();
+            await loadMigrationsTable();
             
             // Refresh dashboard if it's visible
             if (typeof updateRecentMigrations === 'function') {

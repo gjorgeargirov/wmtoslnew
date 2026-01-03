@@ -63,28 +63,31 @@ window.cancelMigration = function() {
   
   // Update migration status to cancelled and save to history
   if (migrationToSave) {
-    migrationToSave.status = 'cancelled';
-    migrationToSave.message = 'Migration cancelled by user';
-    migrationToSave.duration = duration;
-    
-    // Move to history (don't create duplicate - update existing or add new)
     const fileName = migrationToSave.fileName;
     
-    // Check if this migration already exists in history (shouldn't, but let's be safe)
-    const existingIndex = migrationHistory.findIndex(m => 
-      m.fileName === fileName && 
-      m.executionId === migrationToSave.executionId
-    );
-    
-    if (existingIndex >= 0) {
-      // Update existing entry
-      migrationHistory[existingIndex] = migrationToSave;
+    // Use saveMigrationToHistory to save to database and localStorage
+    if (typeof saveMigrationToHistory === 'function') {
+      saveMigrationToHistory(fileName, 'cancelled', 'Migration cancelled by user', duration);
     } else {
-      // Add new entry
-      migrationHistory.push(migrationToSave);
+      // Fallback if function not available
+      migrationToSave.status = 'cancelled';
+      migrationToSave.message = 'Migration cancelled by user';
+      migrationToSave.duration = duration;
+      
+      // Check if this migration already exists in history
+      const existingIndex = migrationHistory.findIndex(m => 
+        m.fileName === fileName && 
+        m.executionId === migrationToSave.executionId
+      );
+      
+      if (existingIndex >= 0) {
+        migrationHistory[existingIndex] = migrationToSave;
+      } else {
+        migrationHistory.push(migrationToSave);
+      }
+      
+      localStorage.setItem('migrationHistory', JSON.stringify(migrationHistory));
     }
-    
-    localStorage.setItem('migrationHistory', JSON.stringify(migrationHistory));
     
     // Update dashboard
     if (typeof updateDashboardStats === 'function') {

@@ -459,10 +459,45 @@ function updateDashboardStats() {
   document.getElementById('statCancelled').textContent = cancelled;
 }
 
-function updateRecentMigrations() {
+async function updateRecentMigrations() {
   const tableBody = document.getElementById('migrationsTableBody');
   
   if (!tableBody) return;
+  
+  // Try to load from API first
+  if (window.migrationAPI) {
+    try {
+      const result = await window.migrationAPI.getMigrations();
+      if (result && Array.isArray(result.migrations)) {
+        // Update migrationHistory with data from database
+        migrationHistory = result.migrations;
+        // Also update localStorage for backward compatibility
+        localStorage.setItem('migrationHistory', JSON.stringify(migrationHistory));
+        console.log('✅ Loaded migrations from database:', migrationHistory.length);
+      }
+    } catch (error) {
+      console.error('❌ Failed to load migrations from API:', error);
+      // Fall back to localStorage
+      try {
+        const stored = localStorage.getItem('migrationHistory');
+        if (stored) {
+          migrationHistory = JSON.parse(stored);
+        }
+      } catch (e) {
+        console.error('Error loading from localStorage:', e);
+      }
+    }
+  } else {
+    // Fallback to localStorage
+    try {
+      const stored = localStorage.getItem('migrationHistory');
+      if (stored) {
+        migrationHistory = JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error('Error loading from localStorage:', e);
+    }
+  }
   
   // Get current user and their accessible projects
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -809,18 +844,35 @@ function getFilteredMigrationsCount() {
   return filteredMigrations.length;
 }
 
-function saveMigrationToHistory(fileName, status, message = '', duration = null) {
+async function saveMigrationToHistory(fileName, status, message = '', duration = null) {
   // Get current user info
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
   const userEmail = user.email || 'demo@iwconnect.com';
+  const userId = user.id;
   
   // Get project from current migration or form
-  const project = currentMigration?.project || 
-                  document.getElementById('migrationProject')?.value || 
-                  'Unassigned';
+  const projectName = currentMigration?.project || 
+                      document.getElementById('migrationProject')?.value || 
+                      'Unassigned';
   
-  // Generate execution ID (8 chars similar to SnapLogic)
-  const executionId = Math.random().toString(36).substring(2, 10);
+  // Get execution ID from current migration or generate new one
+  const executionId = currentMigration?.executionId || Math.random().toString(36).substring(2, 10);
+  
+  // Get project ID if project name is provided
+  let projectId = null;
+  if (projectName && projectName !== 'Unassigned') {
+    try {
+      const allProjects = await Promise.resolve(getAllProjects());
+      if (Array.isArray(allProjects)) {
+        const project = allProjects.find(p => p.name === projectName);
+        if (project) {
+          projectId = project.id;
+        }
+      }
+    } catch (error) {
+      console.warn('Could not find project ID:', error);
+    }
+  }
   
   const migration = {
     fileName,
@@ -830,12 +882,40 @@ function saveMigrationToHistory(fileName, status, message = '', duration = null)
     duration: duration, // Duration in milliseconds
     user: userEmail,
     executionId: executionId,
-    project: project // Add project to migration
+    project: projectName // Add project to migration
   };
   
-  // Add new migration (don't save in-progress to history, only completed/failed)
-  migrationHistory.push(migration);
+  // Try to save to database via API
+  if (window.migrationAPI && userId) {
+    try {
+      const startTime = currentMigration?.startTime ? new Date(currentMigration.startTime).toISOString() : new Date().toISOString();
+      const endTime = new Date().toISOString();
+      
+      await window.migrationAPI.createMigration({
+        executionId: executionId,
+        userId: userId,
+        projectId: projectId,
+        fileName: fileName,
+        status: status,
+        startTime: startTime,
+        endTime: endTime,
+        duration: duration,
+        resultData: {
+          message: message,
+          fileName: fileName,
+          status: status
+        }
+      });
+      
+      console.log('✅ Migration saved to database');
+    } catch (error) {
+      console.error('❌ Failed to save migration to database:', error);
+      // Fall through to localStorage
+    }
+  }
   
+  // Also save to localStorage for immediate UI updates and fallback
+  migrationHistory.push(migration);
   localStorage.setItem('migrationHistory', JSON.stringify(migrationHistory));
   
   // Clear current migration from localStorage
@@ -1505,6 +1585,46 @@ async function startMigration() {
   
   // Generate execution ID
   const executionId = Math.random().toString(36).substring(2, 10);
+  
+  // Get project ID
+  let projectId = null;
+  try {
+    const allProjects = await Promise.resolve(getAllProjects());
+    if (Array.isArray(allProjects)) {
+      const project = allProjects.find(p => p.name === selectedProject);
+      if (project) {
+        projectId = project.id;
+      }
+    }
+  } catch (error) {
+    console.warn('Could not find project ID:', error);
+  }
+  
+  // Save migration to database (in-progress status)
+  if (window.migrationAPI && user.id) {
+    try {
+      const startTime = new Date().toISOString();
+      await window.migrationAPI.createMigration({
+        executionId: executionId,
+        userId: user.id,
+        projectId: projectId,
+        fileName: uploadedFile.name,
+        status: 'in_progress',
+        startTime: startTime,
+        endTime: null,
+        duration: null,
+        resultData: {
+          message: 'Migration in progress...',
+          fileName: uploadedFile.name,
+          status: 'in-progress'
+        }
+      });
+      console.log('✅ Migration started - saved to database');
+    } catch (error) {
+      console.error('❌ Failed to save migration start to database:', error);
+      // Continue anyway - migration will still work
+    }
+  }
   
   // Save migration state to localStorage
   currentMigration = {

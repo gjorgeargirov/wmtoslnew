@@ -73,6 +73,36 @@ const userAPI = {
   },
 };
 
+// Migration API methods
+const migrationAPI = {
+  // Get all migrations
+  async getMigrations() {
+    return apiRequest('/api/migrations');
+  },
+
+  // Create migration
+  async createMigration(migrationData) {
+    return apiRequest('/api/migrations', {
+      method: 'POST',
+      body: JSON.stringify(migrationData),
+    });
+  },
+
+  // Delete migration
+  async deleteMigration(migrationId) {
+    return apiRequest(`/api/migrations/${migrationId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Delete all migrations
+  async deleteAllMigrations() {
+    return apiRequest('/api/migrations', {
+      method: 'DELETE',
+    });
+  },
+};
+
 // Project API methods
 const projectAPI = {
   // Get all projects
@@ -117,6 +147,9 @@ const projectAPI = {
     if (typeof projectAPI !== 'undefined') {
       window.projectAPI = projectAPI;
     }
+    if (typeof migrationAPI !== 'undefined') {
+      window.migrationAPI = migrationAPI;
+    }
     if (typeof API_BASE_URL !== 'undefined') {
       window.API_BASE_URL = API_BASE_URL;
     }
@@ -125,6 +158,7 @@ const projectAPI = {
     console.log('📍 API Base URL:', window.API_BASE_URL);
     console.log('🔗 userAPI available:', typeof window.userAPI !== 'undefined');
     console.log('🔗 projectAPI available:', typeof window.projectAPI !== 'undefined');
+    console.log('🔗 migrationAPI available:', typeof window.migrationAPI !== 'undefined');
     
     // Verify they're actually set
     if (typeof window.userAPI === 'undefined') {
