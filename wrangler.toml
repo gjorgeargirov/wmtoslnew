@@ -9,7 +9,7 @@ compatibility_date = "2024-01-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "wmtoslnew-db"
-database_id = "" # Will be set after creating the database
+database_id = "c6d5e403-07ed-4eb9-94b2-e49d4ddb3ebe"
 
 # Environment variables (set these in Cloudflare Dashboard or via CLI)
 # For security, set SNAPLOGIC_API_TOKEN in Cloudflare Dashboard:
