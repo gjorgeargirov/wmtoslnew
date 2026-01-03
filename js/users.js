@@ -119,26 +119,37 @@ const IS_PRODUCTION = window.location.hostname !== 'localhost' &&
 // Try to load API client (check after a short delay to ensure api-client.js has loaded)
 function initializeAPIClient() {
   try {
-    if (typeof userAPI !== 'undefined') {
-      API_CLIENT = userAPI;
-      USE_API = true;
-      console.log('✅ API client loaded - will use database API');
-      if (IS_PRODUCTION) {
-        console.log('🌐 Production mode: API is required, localStorage fallback disabled');
-      }
-    } else if (window.userAPI) {
+    // Check window.userAPI first (most reliable)
+    if (window.userAPI && typeof window.userAPI.login === 'function') {
       API_CLIENT = window.userAPI;
       USE_API = true;
       console.log('✅ API client loaded - will use database API');
+      console.log('📍 API Base URL:', window.API_BASE_URL || 'not set');
       if (IS_PRODUCTION) {
         console.log('🌐 Production mode: API is required, localStorage fallback disabled');
       }
-    } else {
+      return true;
+    } 
+    // Fallback check (for ES modules)
+    else if (typeof userAPI !== 'undefined' && typeof userAPI.login === 'function') {
+      API_CLIENT = userAPI;
+      USE_API = true;
+      console.log('✅ API client loaded (ES module) - will use database API');
       if (IS_PRODUCTION) {
-        console.error('❌ API client not available in production! Check that api-client.js is loaded.');
+        console.log('🌐 Production mode: API is required, localStorage fallback disabled');
+      }
+      return true;
+    } 
+    else {
+      if (IS_PRODUCTION) {
+        console.error('❌ API client not available in production!');
+        console.error('   - window.userAPI:', typeof window.userAPI);
+        console.error('   - window.API_BASE_URL:', window.API_BASE_URL);
+        console.error('   - Check that api-client.js is loaded before users.js');
       } else {
         console.log('⚠️ API client not available - using localStorage fallback (local development)');
       }
+      return false;
     }
   } catch (e) {
     if (IS_PRODUCTION) {
@@ -146,6 +157,7 @@ function initializeAPIClient() {
     } else {
       console.log('⚠️ API client not available, using localStorage fallback:', e);
     }
+    return false;
   }
 }
 
@@ -173,12 +185,37 @@ if (IS_PRODUCTION && typeof window !== 'undefined') {
 }
 
 // Initialize immediately and also after a short delay (in case script loads after)
-initializeAPIClient();
+// Note: api-client.js should be loaded BEFORE users.js in the HTML
+let apiInitialized = initializeAPIClient();
+
 if (typeof window !== 'undefined') {
-  window.addEventListener('load', initializeAPIClient);
-  // Also try after a short delay
-  setTimeout(initializeAPIClient, 100);
-  setTimeout(initializeAPIClient, 500);
+  // Try again on window load
+  window.addEventListener('load', () => {
+    if (!apiInitialized) {
+      apiInitialized = initializeAPIClient();
+    }
+  });
+  
+  // Also try after short delays (in case of async script loading)
+  setTimeout(() => {
+    if (!apiInitialized) {
+      apiInitialized = initializeAPIClient();
+    }
+  }, 100);
+  
+  setTimeout(() => {
+    if (!apiInitialized) {
+      apiInitialized = initializeAPIClient();
+      if (!apiInitialized && IS_PRODUCTION) {
+        console.error('❌ CRITICAL: API client still not available after 500ms!');
+        console.error('   This means api-client.js is not loading correctly.');
+        console.error('   Check:');
+        console.error('   1. Is api-client.js in the correct path?');
+        console.error('   2. Is it being loaded before users.js?');
+        console.error('   3. Are there any JavaScript errors preventing it from executing?');
+      }
+    }
+  }, 500);
 }
 
 // Authenticate user - uses API if available, otherwise localStorage

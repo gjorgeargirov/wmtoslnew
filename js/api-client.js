@@ -35,7 +35,7 @@ async function apiRequest(endpoint, options = {}) {
 }
 
 // User API methods
-export const userAPI = {
+const userAPI = {
   // Login
   async login(email, password) {
     return apiRequest('/api/users/login', {
@@ -74,7 +74,7 @@ export const userAPI = {
 };
 
 // Project API methods
-export const projectAPI = {
+const projectAPI = {
   // Get all projects
   async getProjects() {
     return apiRequest('/api/projects');
@@ -89,10 +89,21 @@ export const projectAPI = {
   },
 };
 
-// Make API client globally available
-window.userAPI = userAPI;
-window.projectAPI = projectAPI;
-window.API_BASE_URL = API_BASE_URL;
+// Make API client globally available IMMEDIATELY
+// This must happen synchronously so users.js can find it
+(function() {
+  'use strict';
+  
+  // Set global variables immediately
+  window.userAPI = userAPI;
+  window.projectAPI = projectAPI;
+  window.API_BASE_URL = API_BASE_URL;
+  
+  console.log('✅ API Client initialized');
+  console.log('📍 API Base URL:', API_BASE_URL);
+  console.log('🔗 userAPI available:', typeof window.userAPI !== 'undefined');
+  console.log('🔗 projectAPI available:', typeof window.projectAPI !== 'undefined');
+})();
 
 // Diagnostic function to test API connectivity
 window.testAPI = async function() {
@@ -128,6 +139,3 @@ if (window.location.hostname !== 'localhost' && window.location.hostname !== '12
     }, 1000);
   });
 }
-
-// Export API base URL for config (for ES modules)
-export { API_BASE_URL };
