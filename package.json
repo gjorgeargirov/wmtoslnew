@@ -1,0 +1,28 @@
+{
+  "name": "migration-accelerator",
+  "version": "1.0.0",
+  "description": "WebMethods to SnapLogic Migration Tool - Cloudflare Deployment",
+  "scripts": {
+    "deploy:worker": "wrangler deploy",
+    "deploy:worker:staging": "wrangler deploy --env staging",
+    "deploy:worker:production": "wrangler deploy --env production",
+    "tail:worker": "wrangler tail",
+    "deploy:pages": "wrangler pages deploy . --project-name=migration-accelerator",
+    "secret:set": "wrangler secret put SNAPLOGIC_API_TOKEN"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "pages",
+    "migration",
+    "snaplogic"
+  ],
+  "author": "IWConnect",
+  "license": "PROPRIETARY",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Migration Accelerator - IWConnect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/webp" href="assets/icon.webp?v=1" />
+  <link rel="shortcut icon" type="image/webp" href="assets/icon.webp?v=1" />
+  <script src="js/users.js?v=1011"></script>
+  <script src="js/auth.js?v=4"></script>
+  <link rel="stylesheet" href="css/styles.css?v=45" />
+  <link rel="stylesheet" href="css/dashboard-styles.css?v=39" />
+  <link rel="stylesheet" href="css/profile-styles.css?v=38" />
+  <link rel="stylesheet" href="css/cancel-migration-addon.css?v=35" />
+  <link rel="stylesheet" href="css/admin-styles.css?v=1010" />
+</head>
+
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <img src="assets/logo.png?v=2" alt="IWConnect" class="brand-logo" />
+        <button class="hamburger-btn" aria-label="Menu">☰</button>
+      </div>
+
+      <!-- User Info Card -->
+      <div class="sidebar-user-card">
+        <div class="user-avatar-sidebar" id="sidebarUserAvatar">
+          <span id="sidebarUserInitials">DU</span>
+        </div>
+        <div class="user-info-sidebar">
+          <div class="user-name-sidebar" id="sidebarUserName">Demo User</div>
+          <div class="user-role-sidebar" id="sidebarUserRole">Admin</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">USEFUL LINKS</div>
+        <button class="nav-link active" id="navNewMigration" type="button">New Migration</button>
+        <button class="nav-link" id="navDashboard" type="button">Dashboard</button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">HELP</div>
+        <button class="nav-link" id="btnHelp">Help</button>
+        <button class="nav-link" id="btnContactUs">Contact Us</button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label">MY PROFILE</div>
+        <button class="nav-link" id="navProfile" type="button">My Profile</button>
+        <button class="nav-link" id="navLogout" type="button">Logout</button>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-label hidden" id="adminSectionLabel">ADMINISTRATION</div>
+        <button class="nav-link hidden" id="navAdmin" type="button">User Management</button>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="footer-copyright">
+          <p>©2023 All Rights Reserved</p>
+          <p>Made by IWConnect</p>
+        </div>
+        <img src="assets/logo.png" alt="IWConnect" class="iw-logo-bottom" />
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <!-- Dashboard View -->
+      <section id="dashboardView" class="dashboard-view hidden">
+        <header class="main-header">
+          <div>
+            <h1>Dashboard</h1>
+            <p>Overview of your migrations and quick actions</p>
+          </div>
+          <button class="btn btn-primary" id="btnNewMigrationTop" style="height: fit-content;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+              <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            New Migration
+          </button>
+        </header>
+        <!-- Dashboard Stats -->
+        <div class="dashboard-stats">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="15" width="4" height="5" fill="#6366f1" opacity="0.8"/>
+                <rect x="9" y="10" width="4" height="10" fill="#6366f1" opacity="0.6"/>
+                <rect x="15" y="5" width="4" height="15" fill="#6366f1"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="statTotalMigrations">0</div>
+              <div class="stat-label">Total Migrations</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 6L9 17L4 12" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="statSuccessful">0</div>
+              <div class="stat-label">Successful</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="#f59e0b" stroke-width="2" stroke-opacity="0.3"/>
+                <path d="M12 6V12L16 14" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="statInProgress">0</div>
+              <div class="stat-label">In Progress</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M18 6L6 18M6 6L18 18" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="statFailed">0</div>
+              <div class="stat-label">Failed</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="#6b7280" stroke-width="2"/>
+                <path d="M8 12H16" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value" id="statCancelled">0</div>
+              <div class="stat-label">Cancelled</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Migrations -->
+        <div class="recent-migrations">
+          <h2>Recent Migrations</h2>
+          <div class="migrations-table-container">
+            <table id="recentMigrationsList" class="migrations-table">
+              <thead>
+                <tr>
+                  <th>Project Name</th>
+                  <th>Execution ID</th>
+                  <th>Execution Start</th>
+                  <th>Duration</th>
+                  <th>User</th>
+                  <th>Execution Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="migrationsTableBody">
+                <tr class="empty-row">
+                  <td colspan="7">
+                    <div class="empty-state">
+                      <div class="empty-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                          <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                      <p>No migrations yet</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Pagination Controls -->
+          <div class="pagination-container" id="paginationContainer" style="display: none;">
+            <div class="pagination-info">
+              <span id="paginationInfo">Showing 0-0 of 0</span>
+            </div>
+            <div class="pagination-controls">
+              <button class="pagination-btn" id="paginationFirst" onclick="goToPage(1)" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 6L12 12L18 18M6 6L12 12L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="pagination-btn" id="paginationPrev" onclick="goToPreviousPage()" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="pagination-pages" id="paginationPages"></div>
+              <button class="pagination-btn" id="paginationNext" onclick="goToNextPage()" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button class="pagination-btn" id="paginationLast" onclick="goToLastPage()" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6 6L12 12L6 18M12 6L18 12L12 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Migration Wizard View -->
+      <section id="wizardView" class="wizard-view">
+      <header class="main-header">
+        <h1>Migration Accelerator</h1>
+        <p>Follow the steps in the wizard to upload, configure, and migrate your package.</p>
+      </header>
+
+      <!-- Wizard Step Indicator -->
+      <div class="wizard-steps">
+        <button class="wizard-step active" id="wizStep1" onclick="goToStep(1)">
+          <span class="step-num">1</span> Upload Package
+        </button>
+        <button class="wizard-step" id="wizStep2" onclick="goToStep(2)">
+          <span class="step-num">2</span> Configure
+        </button>
+        <button class="wizard-step" id="wizStep3" onclick="goToStep(3)">
+          <span class="step-num">3</span> Migrate
+        </button>
+      </div>
+
+      <!-- Step 1: Upload -->
+      <section class="card" id="step1">
+        <div class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+            <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Upload Package
+        </div>
+        <div class="card-subtitle">Upload your WebMethods ZIP package to get started.</div>
+
+        <div class="alert">
+          Maximum file size: 100MB. Only .zip files are supported.
+        </div>
+
+        <div class="upload-box" id="uploadBox" onclick="document.getElementById('fileInput').click()"
+          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+          <div class="upload-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 13H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 17H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 9H9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="upload-title">Drag & drop your package</div>
+          <div class="upload-subtitle">or click the button below to browse</div>
+          <button type="button" class="btn btn-secondary">Browse files</button>
+          <input type="file" id="fileInput" style="display:none" accept=".zip" onchange="handleFileSelect(event)" />
+        </div>
+        <div id="fileError" class="error-message"></div>
+
+        <div id="fileInfo" class="file-info hidden">
+          <div class="file-main">
+            <span style="display: inline-flex; align-items: center;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <div>
+              <div class="file-name" id="fileName"></div>
+              <div class="file-size" id="fileSize"></div>
+            </div>
+          </div>
+          <span class="status-pill">Ready</span>
+        </div>
+
+        <div class="actions-row" style="justify-content:flex-end;">
+          <button class="btn btn-primary" id="next1" onclick="goToStep(2)" disabled>Next →</button>
+        </div>
+      </section>
+
+      <!-- Step 2: Configure -->
+      <section class="card hidden" id="step2">
+        <div class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+            <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          Configure Migration
+        </div>
+        <div class="card-subtitle">Define target environment and conversion options.</div>
+
+        <div class="config-section">
+          <div class="config-field-full">
+            <label class="form-label">Project <span class="required">*</span></label>
+            <select id="migrationProject" class="form-control" required>
+              <option value="">Select project...</option>
+            </select>
+            <small style="color: #6c757d; font-size: 0.875rem;">Select the project this migration belongs to</small>
+          </div>
+        </div>
+
+        <div class="config-section">
+          <div class="config-field">
+            <label class="form-label">Target environment <span class="required">*</span></label>
+            <select id="targetEnv" class="form-control">
+              <option value="Development" selected>Development</option>
+              <option value="Production">Production</option>
+            </select>
+          </div>
+          <div class="config-field">
+            <label class="form-label">Naming convention</label>
+            <select id="namingConvention" class="form-control">
+              <option value="Original Names" selected>Original Names</option>
+              <option value="Prefixed (wm_)">Prefixed (wm_)</option>
+              <option value="Prefixed (snaplogic_)">Prefixed (snaplogic_)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="config-section options-section">
+          <div class="form-label" style="margin-bottom: 0.75rem;">Options</div>
+          <div class="options-list">
+            <label class="option-item">
+              <input type="checkbox" id="optGenerateReport" checked />
+              <span>Generate report</span>
+            </label>
+            <label class="option-item">
+              <input type="checkbox" id="optSendToClient" checked />
+              <span>Send them direct into client environment</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="actions-row" style="justify-content:space-between;">
+          <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+          <button class="btn btn-primary" onclick="goToStep(3)">Next →</button>
+        </div>
+      </section>
+
+      <!-- Step 3: Migrate -->
+      <section class="card hidden" id="step3">
+        <div class="card-title">▶ Review & Migrate</div>
+        <div class="card-subtitle">Confirm your settings and start the migration.</div>
+
+        <table class="summary-table">
+          <tbody>
+            <tr>
+              <td class="summary-label">File</td>
+              <td class="summary-value" id="sumFile">—</td>
+            </tr>
+            <tr>
+              <td class="summary-label">Environment</td>
+              <td class="summary-value" id="sumEnv">—</td>
+            </tr>
+            <tr>
+              <td class="summary-label">Naming</td>
+              <td class="summary-value" id="sumNaming">—</td>
+            </tr>
+            <tr>
+              <td class="summary-label">Generate report</td>
+              <td class="summary-value" id="sumGenerateReport">—</td>
+            </tr>
+            <tr>
+              <td class="summary-label">Send to client environment</td>
+              <td class="summary-value" id="sumSendToClient">—</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="actions-row" style="justify-content:space-between;">
+          <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+          <button class="btn btn-primary" onclick="startMigration()">▶ Start Migration</button>
+        </div>
+
+        <div id="progressSection" class="progress-section hidden">
+          <div class="progress-label" id="progressLabel">Validating package...</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <button type="button" class="btn btn-danger hidden" id="btnCancelMigration" onclick="cancelMigration()" style="margin-top: 1rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.25rem;">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Cancel Migration
+          </button>
+        </div>
+
+        <div id="resultsSection" class="hidden">
+          <div class="alert success-alert">
+            Migration completed successfully.
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-value" id="resServices">—</div>
+              <div class="metric-label">SERVICES</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="resFlows">—</div>
+              <div class="metric-label">FLOWS</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="resRate">—</div>
+              <div class="metric-label">CONVERSION RATE</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="resWarnings">—</div>
+              <div class="metric-label">WARNINGS</div>
+            </div>
+          </div>
+
+          <div class="actions-row">
+            <button class="btn btn-secondary" onclick="downloadReport('json')">📄 JSON report</button>
+            <button class="btn btn-secondary" onclick="downloadReport('csv')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.25rem;">
+                <rect x="3" y="15" width="4" height="5" fill="currentColor" opacity="0.8"/>
+                <rect x="9" y="10" width="4" height="10" fill="currentColor" opacity="0.6"/>
+                <rect x="15" y="5" width="4" height="15" fill="currentColor"/>
+              </svg>
+              CSV report
+            </button>
+            <button class="btn btn-primary" style="margin-left:auto;" onclick="resetWizard()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.25rem;">
+                <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M23 20V14H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20.49 9C20.0173 7.56678 19.2201 6.28542 18.1617 5.27542C17.1033 4.26542 15.8207 3.55976 14.4385 3.22426C13.0563 2.88876 11.6169 2.93399 10.2578 3.35618C8.89865 3.77836 7.66344 4.56491 6.66154 5.63955C5.65964 6.71419 4.92625 8.04466 4.533 9.5M3.51 15C3.98273 16.4332 4.77987 17.7146 5.83827 18.7246C6.89667 19.7346 8.17926 20.4402 9.56148 20.7757C10.9437 21.1112 12.3831 21.066 13.7422 20.6438C15.1014 20.2216 16.3366 19.4351 17.3385 18.3605C18.3404 17.2858 19.0738 15.9553 19.467 14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              New migration
+            </button>
+          </div>
+        </div>
+      </section>
+      </section>
+
+      <!-- Profile View -->
+      <section id="profileView" class="profile-view hidden">
+        <header class="main-header">
+          <h1>My Profile</h1>
+          <p>Manage your account settings and preferences</p>
+        </header>
+
+        <div class="profile-container">
+          <!-- Profile Card -->
+          <div class="profile-card">
+            <div class="profile-avatar">
+              <div class="avatar-circle" id="userAvatar">
+                <span id="userInitials">U</span>
+              </div>
+            </div>
+            <div class="profile-info">
+              <h2 id="profileName">User Name</h2>
+              <p id="profileEmail">user@example.com</p>
+              <span class="profile-role" id="profileRole">User</span>
+            </div>
+          </div>
+
+          <!-- Info Cards Row -->
+          <div class="profile-info-row">
+            <!-- Profile Details -->
+            <div class="profile-details-card">
+            <h3>Account Information</h3>
+            <div class="profile-field">
+              <label>Profile Picture</label>
+              <div class="profile-avatar-upload">
+                <div class="avatar-preview-profile" id="profileAvatarPreview">
+                  <span id="profileAvatarInitials">U</span>
+                </div>
+                <div class="avatar-upload-controls">
+                  <input type="file" id="profileAvatarInput" class="form-control" accept="image/jpeg,image/jpg,image/png,image/gif" onchange="handleProfileAvatarUpload(event)" style="margin-bottom: 0.5rem;" />
+                  <button type="button" class="btn btn-sm btn-secondary" id="btnRemoveProfileAvatar" onclick="removeProfileAvatar()" style="display: none;">Remove Picture</button>
+                </div>
+                <small style="display: block; margin-top: 0.5rem; color: #6c757d;">Upload a profile picture (JPG, PNG, or GIF, max 2MB)</small>
+              </div>
+            </div>
+            <div class="profile-field">
+              <label>Full Name</label>
+              <div class="profile-value" id="detailName">-</div>
+            </div>
+            <div class="profile-field">
+              <label>Email Address</label>
+              <div class="profile-value" id="detailEmail">-</div>
+            </div>
+            <div class="profile-field">
+              <label>Role</label>
+              <div class="profile-value" id="detailRole">-</div>
+            </div>
+            <div class="profile-field">
+              <label>Account Status</label>
+              <div class="profile-value">
+                <span class="status-badge active">Active</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Statistics Card -->
+          <div class="profile-stats-card">
+            <h3>Your Activity</h3>
+            <div class="profile-stat-item">
+              <span class="stat-label">Total Migrations</span>
+              <span class="stat-value" id="userStatTotal">0</span>
+            </div>
+            <div class="profile-stat-item">
+              <span class="stat-label">Successful Migrations</span>
+              <span class="stat-value" id="userStatSuccess">0</span>
+            </div>
+            <div class="profile-stat-item">
+              <span class="stat-label">Failed Migrations</span>
+              <span class="stat-value" id="userStatFailed">0</span>
+            </div>
+            <div class="profile-stat-item">
+              <span class="stat-label">Last Migration</span>
+              <span class="stat-value" id="userStatLast">Never</span>
+            </div>
+          </div>
+
+          <!-- Preferences Card -->
+          <div class="profile-preferences-card">
+            <h3>Preferences</h3>
+            <div class="preference-item">
+              <div class="preference-info">
+                <div class="preference-label">Email Notifications</div>
+                <div class="preference-desc">Receive email updates when migrations complete</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="prefEmailNotif" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="preference-item">
+              <div class="preference-info">
+                <div class="preference-label">Browser Notifications</div>
+                <div class="preference-desc">Show desktop notifications for migration status</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="prefBrowserNotif" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="preference-item">
+              <div class="preference-info">
+                <div class="preference-label">Auto-navigate to Results</div>
+                <div class="preference-desc">Automatically show results after migration completes</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="prefAutoNavigate" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="profile-actions">
+            <button class="btn btn-secondary" id="btnBackToDashboard">← Back to Dashboard</button>
+            <button class="btn btn-primary" id="btnSavePreferences">Save Preferences</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Admin View -->
+      <section id="adminView" class="admin-view hidden">
+        <!-- Admin Tabs -->
+        <div class="admin-tabs">
+          <button class="admin-tab active" onclick="switchAdminTab('users')" id="adminTabUsers">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.25rem;">
+              <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
+              <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Users
+          </button>
+          <button class="admin-tab" onclick="switchAdminTab('projects')" id="adminTabProjects">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.25rem;">
+              <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Projects
+          </button>
+          <button class="admin-tab" onclick="switchAdminTab('migrations')" id="adminTabMigrations">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.25rem;">
+              <rect x="3" y="15" width="4" height="5" fill="currentColor" opacity="0.8"/>
+              <rect x="9" y="10" width="4" height="10" fill="currentColor" opacity="0.6"/>
+              <rect x="15" y="5" width="4" height="15" fill="currentColor"/>
+            </svg>
+            Migration History
+          </button>
+        </div>
+
+        <!-- Users Tab Content -->
+        <div id="adminUsersTab" class="admin-tab-content">
+          <div class="admin-header">
+            <div class="admin-header-title">
+              <span class="admin-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                  <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M18.36 5.64L19.78 4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <div>
+                <h1>User Management</h1>
+                <p>Manage user accounts, roles, and permissions</p>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="addNewUser()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Add New User
+            </button>
+          </div>
+
+        <!-- Admin Stats -->
+        <div class="admin-stats">
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="9" cy="7" r="4" stroke="#6366f1" stroke-width="2"/>
+                <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="admin-stat-content">
+              <div class="admin-stat-value" id="adminStatTotal">0</div>
+              <div class="admin-stat-label">Total Users</div>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 6V12L16 14" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="admin-stat-content">
+              <div class="admin-stat-value" id="adminStatAdmins">0</div>
+              <div class="admin-stat-label">Administrators</div>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="7" r="4" stroke="#6366f1" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="admin-stat-content">
+              <div class="admin-stat-value" id="adminStatUsers">0</div>
+              <div class="admin-stat-label">Regular Users</div>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="admin-stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 12S5 4 12 4S23 12 23 12S19 20 12 20S1 12 1 12Z" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke="#6366f1" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="admin-stat-content">
+              <div class="admin-stat-value" id="adminStatViewers">0</div>
+              <div class="admin-stat-label">Viewers</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="users-table-container">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>User</th>
+                <th>Role</th>
+                <th>Department</th>
+                <th>Permissions</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr class="empty-row">
+                <td colspan="6">
+                  <div class="empty-state">
+                    <p>Loading users...</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        </div>
+
+        <!-- Projects Tab Content -->
+        <div id="adminProjectsTab" class="admin-tab-content hidden">
+          <div class="admin-header">
+            <div class="admin-header-title">
+              <span class="admin-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <div>
+                <h1>Project Management</h1>
+                <p>Manage projects and their settings</p>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="addNewProject()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Add New Project
+            </button>
+          </div>
+
+          <!-- Projects Table -->
+          <div class="users-table-container">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Project Name</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="projectsTableBody">
+                <tr class="empty-row">
+                  <td colspan="4">
+                    <div class="empty-state">
+                      <p>Loading projects...</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Migration History Tab Content -->
+        <div id="adminMigrationsTab" class="admin-tab-content hidden">
+          <div class="admin-header">
+            <div class="admin-header-title">
+              <span class="admin-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="15" width="4" height="5" fill="currentColor" opacity="0.8"/>
+                  <rect x="9" y="10" width="4" height="10" fill="currentColor" opacity="0.6"/>
+                  <rect x="15" y="5" width="4" height="15" fill="currentColor"/>
+                </svg>
+              </span>
+              <div>
+                <h1>Migration History</h1>
+                <p>View and manage all migration records</p>
+              </div>
+            </div>
+            <div>
+              <button class="btn btn-danger" onclick="deleteAllMigrations()" id="btnDeleteAllMigrations">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+                  <path d="M3 6H5H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Delete All
+              </button>
+            </div>
+          </div>
+
+          <!-- Migration History Table -->
+          <div class="users-table-container">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>Execution ID</th>
+                  <th>Project</th>
+                  <th>File Name</th>
+                  <th>User</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Duration</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminMigrationsTableBody">
+                <tr class="empty-row">
+                  <td colspan="8">
+                    <div class="empty-state">
+                      <p>Loading migrations...</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- User Modal -->
+  <div id="userModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="userModalTitle">User Details</h2>
+        <button class="modal-close" onclick="closeModal('userModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="userModalContent">
+        <!-- Content will be dynamically loaded -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Modal -->
+  <div id="projectModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="projectModalTitle">Project Details</h2>
+        <button class="modal-close" onclick="closeModal('projectModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="projectModalContent">
+        <!-- Content will be dynamically loaded -->
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer"></div>
+
+  <!-- Help Modal -->
+  <div id="helpModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="currentColor"/>
+          </svg>
+          Help & Documentation
+        </h2>
+        <button class="modal-close" onclick="closeModal('helpModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="help-section">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+              <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Getting Started
+          </h3>
+          <ol>
+            <li>Upload your WebMethods ZIP package</li>
+            <li>Configure migration settings (environment, naming conventions)</li>
+            <li>Click "Start Migration" to begin the process</li>
+            <li>Download the results when complete</li>
+          </ol>
+        </div>
+        
+        <div class="help-section">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M9.09 9C9.3251 8.33167 9.78915 7.76811 10.4 7.40913C11.0108 7.05016 11.7289 6.91894 12.4272 7.03871C13.1255 7.15849 13.7588 7.52152 14.2151 8.06353C14.6713 8.60553 14.9211 9.29152 14.92 10C14.92 12 11.92 13 11.92 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 17H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Frequently Asked Questions
+          </h3>
+          <details>
+            <summary>What file formats are supported?</summary>
+            <p>Only .zip files up to 100MB are supported. The ZIP should contain your WebMethods package structure.</p>
+          </details>
+          <details>
+            <summary>How long does migration take?</summary>
+            <p>Migration time varies based on package size, typically 2-10 minutes for standard packages.</p>
+          </details>
+          <details>
+            <summary>Can I migrate multiple packages?</summary>
+            <p>Yes, you can run multiple migrations. Each migration is tracked in your dashboard.</p>
+          </details>
+          <details>
+            <summary>What happens to my original files?</summary>
+            <p>Your original files are not modified. The migration creates new SnapLogic pipelines.</p>
+          </details>
+        </div>
+
+        <div class="help-section">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Troubleshooting
+          </h3>
+          <ul>
+            <li><strong>Migration fails:</strong> Check file format and size limits</li>
+            <li><strong>Slow upload:</strong> Check your internet connection</li>
+            <li><strong>Missing results:</strong> Wait for completion notification or check dashboard</li>
+          </ul>
+        </div>
+
+        <div class="help-section">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+              <path d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 19.5C4 20.163 4.26339 20.7989 4.73223 21.2678C5.20107 21.7366 5.83696 22 6.5 22H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 19.5V4.5C4 3.837 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 7H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 11H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Documentation
+          </h3>
+          <p>For detailed documentation, visit: <a href="https://docs.snaplogic.com" target="_blank">SnapLogic Documentation</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Us Modal -->
+  <div id="contactModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; margin-right: 0.5rem;">
+            <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M22 6L12 13L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Contact Us
+        </h2>
+        <button class="modal-close" onclick="closeModal('contactModal')">&times;</button>
+      </div>
+      <div class="modal-body contact-modal-body">
+        <div class="contact-info">
+          <div class="contact-card">
+            <div class="contact-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M22 6L12 13L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Email Support</h3>
+            <p><a href="mailto:support@iwconnect.com">support@iwconnect.com</a></p>
+            <p class="contact-note">Response time: 24 hours</p>
+          </div>
+
+          <div class="contact-card">
+            <div class="contact-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 16.92V19.92C22.0011 20.1985 21.9441 20.4742 21.8335 20.7292C21.7229 20.9841 21.5613 21.2126 21.36 21.4C21.1587 21.5874 20.922 21.7295 20.664 21.8177C20.4061 21.9058 20.1331 21.9381 19.86 21.92C16.7428 21.5856 13.782 20.5341 11.19 18.85C8.77382 17.3147 6.72533 15.2662 5.19 12.85C3.49997 10.2412 2.44824 7.27099 2.12 4.15C2.10189 3.87688 2.13418 3.60388 2.22229 3.34595C2.31041 3.08803 2.45252 2.85134 2.64 2.65C2.82746 2.44872 3.05601 2.28708 3.31099 2.17649C3.56597 2.0659 3.84172 2.00891 4.12 2.01H7.12C7.68147 1.99522 8.22749 2.16708 8.67291 2.49965C9.11833 2.83222 9.43928 3.30787 9.59 3.85L10.64 7.03C10.7841 7.52586 10.8111 8.05272 10.7184 8.56221C10.6257 9.0717 10.4164 9.54836 10.11 9.96L8.09 12.53C9.51428 14.6414 11.3586 16.4857 13.47 17.91L16.05 15.89C16.4616 15.5836 16.9383 15.3743 17.4478 15.2816C17.9573 15.1889 18.4841 15.2159 18.98 15.36L22.16 16.41C22.6921 16.5607 23.1678 16.8817 23.5003 17.3271C23.8329 17.7725 24.0048 18.3185 23.99 18.88L22.99 18.88Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Phone Support</h3>
+            <p><strong>+1 (555) 123-4567</strong></p>
+            <p class="contact-note">Mon-Fri: 9 AM - 5 PM EST</p>
+          </div>
+
+          <div class="contact-card">
+            <div class="contact-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Live Chat</h3>
+            <p>Available during business hours</p>
+            <button class="btn btn-primary" onclick="showToast('Coming Soon', 'Live chat feature coming soon!', 'info')">Start Chat</button>
+          </div>
+        </div>
+
+        <div class="contact-form">
+          <h3>Send us a message</h3>
+          <form id="contactForm" onsubmit="handleContactSubmit(event)">
+            <div class="form-group">
+              <label>Subject</label>
+              <input type="text" id="contactSubject" class="form-control" placeholder="How can we help?" required>
+            </div>
+            <div class="form-group">
+              <label>Message</label>
+              <textarea id="contactMessage" class="form-control" rows="5" placeholder="Describe your issue or question..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js?v=30"></script>
+  <script src="js/api.js?v=52"></script>
+  <script src="js/cancel-migration.js?v=52"></script>
+  <script src="js/admin.js?v=1017"></script>
+  <script src="js/script.js?v=1039"></script>
+</body>
+
+</html>

@@ -1,0 +1,636 @@
+/* Dashboard Styles */
+.dashboard-view, .wizard-view {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dashboard Stats */
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.stat-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Dashboard Actions */
+.dashboard-actions {
+  margin-bottom: 2rem;
+}
+
+.dashboard-actions h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.action-cards {
+  display: flex;
+  gap: 1rem;
+}
+
+.action-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.action-card:hover {
+  border-color: var(--accent-red);
+  background: #fef2f2;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+}
+
+.action-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.action-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.action-card p {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+  display: none;
+}
+
+/* Dashboard Actions */
+.dashboard-actions {
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-actions h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.75rem;
+}
+
+/* Recent Migrations */
+.recent-migrations {
+  margin-top: 1.5rem;
+}
+
+.recent-migrations h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.migrations-table-container {
+  background: white;
+  border-radius: 4px;
+  overflow-x: auto;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #dee2e6;
+}
+
+.migrations-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.migrations-table thead {
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.migrations-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #495057;
+  text-transform: none;
+  letter-spacing: 0;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.migrations-table tbody tr {
+  border-bottom: 1px solid #f1f3f5;
+  transition: background 0.1s;
+  background: #ffffff;
+}
+
+.migrations-table tbody tr:nth-child(even):not(.empty-row) {
+  background: #fafbfc;
+}
+
+.migrations-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.migrations-table tbody tr:hover:not(.empty-row) {
+  background: #f1f3f5 !important;
+}
+
+.migrations-table td {
+  padding: 0.875rem 1rem;
+  vertical-align: middle;
+  color: #212529;
+}
+
+.project-cell {
+  min-width: 200px;
+}
+
+.project-name {
+  font-weight: 400;
+  color: #212529;
+  font-size: 0.875rem;
+  word-break: break-word;
+}
+
+.execution-id-cell {
+  width: 120px;
+}
+
+.execution-id {
+  font-family: 'Courier New', monospace;
+  color: #6c757d;
+  font-size: 0.8125rem;
+}
+
+.datetime-cell {
+  width: 180px;
+}
+
+.datetime {
+  color: #212529;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.duration-cell {
+  width: 100px;
+}
+
+.duration {
+  color: #212529;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+}
+
+.user-cell {
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.user-email {
+  color: #212529;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-cell {
+  width: 130px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.status-icon svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.actions-cell {
+  width: 100px;
+  text-align: center;
+}
+
+.actions-cell .btn-sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.empty-row td {
+  padding: 0;
+}
+
+.empty-row .empty-state {
+  padding: 3rem 1rem;
+}
+
+.migrations-list {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.migration-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.2s;
+}
+
+.migration-item:last-child {
+  border-bottom: none;
+}
+
+.migration-item:hover {
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.migration-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+
+.migration-item.success .migration-icon {
+  background: #d1fae5;
+}
+
+/* Pagination Styles */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: white;
+  border-top: 1px solid #dee2e6;
+  border-radius: 0 0 4px 4px;
+  margin-top: -1px;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid #dee2e6;
+  background: white;
+  color: #495057;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  color: #212529;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pagination-page {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.5rem;
+  border: 1px solid #dee2e6;
+  background: white;
+  color: #495057;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.pagination-page:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+  color: #212529;
+}
+
+.pagination-page.active {
+  background: #007bff;
+  border-color: #007bff;
+  color: white;
+  font-weight: 600;
+}
+
+.pagination-page.active:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+}
+
+.pagination-ellipsis {
+  padding: 0 0.5rem;
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+.migration-item.failed .migration-icon {
+  background: #fee2e2;
+}
+
+.migration-item.in-progress .migration-icon {
+  background: #fef3c7;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.migration-details {
+  flex: 1;
+}
+
+.migration-name {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.migration-date {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.migration-message {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+}
+
+.migration-status {
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  text-transform: capitalize;
+}
+
+.migration-item.success .migration-status {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.migration-item.failed .migration-status {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.migration-status-badge {
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.status-success {
+  background: transparent;
+  color: #212529;
+}
+
+.status-failed {
+  background: transparent;
+  color: #212529;
+}
+
+.status-progress {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-icon {
+  margin-bottom: 1rem;
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+.empty-icon svg {
+  width: 64px;
+  height: 64px;
+}
+
+.empty-state p {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+/* Dashboard Migration Status Card */
+.dashboard-migration-status {
+  margin-bottom: 2rem;
+}
+
+.dashboard-migration-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #3b82f6;
+}
+
+.dashboard-migration-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-migration-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  border-radius: 10px;
+}
+
+.dashboard-migration-info h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 0.25rem 0;
+}
+
+.dashboard-migration-info p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.dashboard-migration-info p span {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.dashboard-migration-progress {
+  margin-bottom: 1rem;
+}
+
+.dashboard-migration-progress-bar {
+  background: #f3f4f6;
+  border-radius: 8px;
+  height: 8px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-migration-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  transition: width 0.3s ease;
+}
+
+.dashboard-migration-status-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.dashboard-migration-status-text span:last-child {
+  font-weight: 600;
+  color: #3b82f6;
+}
+
+.dashboard-migration-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-migration-actions .btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+

@@ -1,0 +1,52 @@
+/* Cancel Migration Button Styles */
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+}
+
+.btn-danger:active {
+  transform: translateY(0);
+}
+
+.btn-danger:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-danger.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Cancelled status styles for dashboard */
+.status-cancelled {
+  background: #e2e3e5;
+  color: #383d41;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.migrations-table tbody tr.in-progress {
+  background: #fffbeb !important;
+  border-left: 3px solid #f59e0b;
+}
+
+.migrations-table tbody tr.cancelled {
+  background: #f3f4f6 !important;
+  border-left: 3px solid #6b7280;
+}
+
