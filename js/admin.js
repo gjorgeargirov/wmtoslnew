@@ -11,19 +11,60 @@ function isAdmin() {
 
 // Generate project checkboxes HTML
 async function generateProjectCheckboxes(selectedProjects = []) {
-  const allProjects = await Promise.resolve(getAllProjects());
-  if (!Array.isArray(allProjects)) {
-    return '<p>Failed to load projects</p>';
+  try {
+    let allProjects = getAllProjects();
+    
+    // If it's a Promise, await it
+    if (allProjects && typeof allProjects.then === 'function') {
+      allProjects = await allProjects;
+    }
+    
+    // Ensure it's an array - handle various response formats
+    if (!Array.isArray(allProjects)) {
+      console.error('getAllProjects returned non-array:', typeof allProjects, allProjects);
+      
+      // Try to extract array from object
+      if (allProjects && typeof allProjects === 'object') {
+        if (Array.isArray(allProjects.projects)) {
+          allProjects = allProjects.projects;
+        } else if (Array.isArray(allProjects.data)) {
+          allProjects = allProjects.data;
+        } else if (Array.isArray(allProjects.results)) {
+          allProjects = allProjects.results;
+        }
+      }
+      
+      // If still not an array, return error message
+      if (!Array.isArray(allProjects)) {
+        console.error('Could not extract projects array from:', allProjects);
+        return '<p>Failed to load projects</p>';
+      }
+    }
+    
+    // Handle empty array
+    if (allProjects.length === 0) {
+      return '<p>No projects available</p>';
+    }
+    
+    return allProjects.map(project => {
+      // Ensure project has a name
+      if (!project || !project.name) {
+        console.warn('Invalid project object:', project);
+        return '';
+      }
+      
+      const isChecked = selectedProjects.includes(project.name);
+      return `
+        <label class="checkbox-label">
+          <input type="checkbox" value="${escapeHtml(project.name)}" ${isChecked ? 'checked' : ''} />
+          <span>${escapeHtml(project.name)}</span>
+        </label>
+      `;
+    }).filter(html => html !== '').join(''); // Filter out empty strings
+  } catch (error) {
+    console.error('Error in generateProjectCheckboxes:', error);
+    return '<p>Error loading projects: ' + error.message + '</p>';
   }
-  return allProjects.map(project => {
-    const isChecked = selectedProjects.includes(project.name);
-    return `
-      <label class="checkbox-label">
-        <input type="checkbox" value="${escapeHtml(project.name)}" ${isChecked ? 'checked' : ''} />
-        <span>${escapeHtml(project.name)}</span>
-      </label>
-    `;
-  }).join('');
 }
 
 // Show/hide admin link based on role

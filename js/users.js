@@ -529,15 +529,31 @@ function getAllProjects() {
     return (async () => {
       try {
         const result = await window.projectAPI.getProjects();
-        console.log('✅ Loaded projects from database:', result.projects?.length || 0);
-        return result.projects || [];
+        console.log('✅ Loaded projects from database, result:', result);
+        
+        // Handle different response formats
+        let projects = [];
+        if (Array.isArray(result)) {
+          projects = result;
+        } else if (result && Array.isArray(result.projects)) {
+          projects = result.projects;
+        } else if (result && result.data && Array.isArray(result.data)) {
+          projects = result.data;
+        } else {
+          console.warn('⚠️ Unexpected API response format:', result);
+          projects = [];
+        }
+        
+        console.log('✅ Projects array:', projects.length, 'items');
+        return projects;
       } catch (error) {
         console.error('❌ API getProjects failed:', error.message);
         if (IS_PRODUCTION) {
           return [];
         }
         console.warn('⚠️ API getProjects failed, falling back to localStorage (development):', error);
-        return loadProjects();
+        const localProjects = loadProjects();
+        return Array.isArray(localProjects) ? localProjects : [];
       }
     })();
   }
@@ -547,7 +563,8 @@ function getAllProjects() {
     console.error('❌ API client not available in production');
     return [];
   }
-  return loadProjects();
+  const localProjects = loadProjects();
+  return Array.isArray(localProjects) ? localProjects : [];
 }
 
 // Make functions globally accessible

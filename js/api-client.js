@@ -94,15 +94,30 @@ const projectAPI = {
 (function() {
   'use strict';
   
-  // Set global variables immediately
-  window.userAPI = userAPI;
-  window.projectAPI = projectAPI;
-  window.API_BASE_URL = API_BASE_URL;
-  
-  console.log('✅ API Client initialized');
-  console.log('📍 API Base URL:', API_BASE_URL);
-  console.log('🔗 userAPI available:', typeof window.userAPI !== 'undefined');
-  console.log('🔗 projectAPI available:', typeof window.projectAPI !== 'undefined');
+  try {
+    // Set global variables immediately
+    if (typeof userAPI !== 'undefined') {
+      window.userAPI = userAPI;
+    }
+    if (typeof projectAPI !== 'undefined') {
+      window.projectAPI = projectAPI;
+    }
+    if (typeof API_BASE_URL !== 'undefined') {
+      window.API_BASE_URL = API_BASE_URL;
+    }
+    
+    console.log('✅ API Client initialized');
+    console.log('📍 API Base URL:', window.API_BASE_URL);
+    console.log('🔗 userAPI available:', typeof window.userAPI !== 'undefined');
+    console.log('🔗 projectAPI available:', typeof window.projectAPI !== 'undefined');
+    
+    // Verify they're actually set
+    if (typeof window.userAPI === 'undefined') {
+      console.error('❌ CRITICAL: userAPI is undefined after initialization!');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing API client:', error);
+  }
 })();
 
 // Diagnostic function to test API connectivity
