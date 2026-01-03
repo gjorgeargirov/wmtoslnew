@@ -112,7 +112,16 @@ export async function onRequest(context) {
   // DELETE user
   if (request.method === 'DELETE') {
     try {
+      // First, delete all related records to avoid foreign key constraint errors
+      // 1. Delete user's migration history
+      await db.prepare('DELETE FROM migrations WHERE user_id = ?').bind(userId).run();
+      
+      // 2. Delete user's project associations
+      await db.prepare('DELETE FROM user_projects WHERE user_id = ?').bind(userId).run();
+      
+      // 3. Finally, delete the user
       await db.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+      
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },

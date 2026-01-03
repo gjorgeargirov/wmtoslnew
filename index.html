@@ -147,7 +147,28 @@
 
         <!-- Recent Migrations -->
         <div class="recent-migrations">
-          <h2>Recent Migrations</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+            <h2 style="margin: 0;">Recent Migrations</h2>
+            <div style="position: relative; width: 100%; max-width: 400px;">
+              <input 
+                type="text" 
+                id="migrationSearchInput" 
+                placeholder="Search by file name, project, execution ID, user, or status..." 
+                style="width: 100%; padding: 0.5rem 2.5rem 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; background: white;"
+              />
+              <svg 
+                width="18" 
+                height="18" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg" 
+                style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: #6b7280;"
+              >
+                <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+                <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
           <div class="migrations-table-container">
             <table id="recentMigrationsList" class="migrations-table">
               <thead>

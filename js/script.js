@@ -10,6 +10,7 @@ let dashboardUpdateInterval = null;
 let currentAbortController = null; // For cancelling migrations
 let currentPage = 1; // Pagination state
 let pageSize = 8; // Items per page
+let migrationSearchQuery = ''; // Search query for filtering migrations
 
 // SECURITY: Sanitize HTML to prevent XSS attacks
 function sanitizeHTML(str) {
@@ -574,6 +575,29 @@ async function updateRecentMigrations() {
          userProjectNames.includes(inProgressMigration.project))) {
       filteredMigrations.push(inProgressMigration);
     }
+  }
+  
+  // Apply search filter if query exists
+  if (migrationSearchQuery && migrationSearchQuery.trim()) {
+    const searchLower = migrationSearchQuery.toLowerCase().trim();
+    filteredMigrations = filteredMigrations.filter(migration => {
+      // Search in file name
+      const fileName = (migration.fileName || '').toLowerCase();
+      // Search in project name
+      const project = (migration.project || '').toLowerCase();
+      // Search in execution ID
+      const executionId = (migration.executionId || migration.execution_id || '').toLowerCase();
+      // Search in user email
+      const user = (migration.user || '').toLowerCase();
+      // Search in status
+      const status = (migration.status || '').toLowerCase();
+      
+      return fileName.includes(searchLower) ||
+             project.includes(searchLower) ||
+             executionId.includes(searchLower) ||
+             user.includes(searchLower) ||
+             status.includes(searchLower);
+    });
   }
   
   // Sort by timestamp (newest first)
@@ -2208,6 +2232,31 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       e.stopPropagation();
       openModal('contactModal');
+    });
+  }
+  
+  // Migration search input
+  const migrationSearchInput = document.getElementById('migrationSearchInput');
+  if (migrationSearchInput) {
+    let searchTimeout;
+    migrationSearchInput.addEventListener('input', function(e) {
+      clearTimeout(searchTimeout);
+      // Debounce search to avoid too many updates
+      searchTimeout = setTimeout(() => {
+        migrationSearchQuery = e.target.value;
+        currentPage = 1; // Reset to first page when searching
+        updateRecentMigrations();
+      }, 300); // Wait 300ms after user stops typing
+    });
+    
+    // Also trigger on Enter key
+    migrationSearchInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        clearTimeout(searchTimeout);
+        migrationSearchQuery = e.target.value;
+        currentPage = 1;
+        updateRecentMigrations();
+      }
     });
   }
   
