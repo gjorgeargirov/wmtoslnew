@@ -279,8 +279,13 @@ async function populateProjectDropdown() {
     // Admins see all projects
     userProjects = allProjects;
   } else if (user.projects && Array.isArray(user.projects)) {
+    // Normalize user.projects: handle both object arrays and string arrays
+    const normalizedProjects = user.projects.map(project => {
+      return typeof project === 'object' && project !== null ? project.name : project;
+    }).filter(name => name);
+    
     // Regular users see only their assigned projects
-    userProjects = allProjects.filter(p => user.projects.includes(p.name));
+    userProjects = allProjects.filter(p => normalizedProjects.includes(p.name));
   }
   
   // Populate dropdown
@@ -427,11 +432,20 @@ function updateDashboardStats() {
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
   let userProjectNames = [];
   
+  // Normalize user.projects: handle both object arrays and string arrays
+  let normalizedProjects = [];
+  if (user.projects && Array.isArray(user.projects)) {
+    normalizedProjects = user.projects.map(project => {
+      // If project is an object, extract the name; otherwise use as-is
+      return typeof project === 'object' && project !== null ? project.name : project;
+    }).filter(name => name); // Remove any null/undefined values
+  }
+  
   if (user.role === 'Admin' && hasPermission(user, 'admin')) {
     // Admins see all projects - don't filter
     userProjectNames = null; // null means show all
-  } else if (user.projects && Array.isArray(user.projects)) {
-    userProjectNames = user.projects;
+  } else if (normalizedProjects.length > 0) {
+    userProjectNames = normalizedProjects;
   }
   
   // Filter migrations by user's projects
@@ -465,9 +479,9 @@ async function updateRecentMigrations() {
   if (!tableBody) return;
   
   // Try to load from API first
-  if (window.migrationAPI) {
+  if (window.migrationDBAPI) {
     try {
-      const result = await window.migrationAPI.getMigrations();
+      const result = await window.migrationDBAPI.getMigrations();
       if (result && Array.isArray(result.migrations)) {
         // Update migrationHistory with data from database
         migrationHistory = result.migrations;
@@ -503,11 +517,20 @@ async function updateRecentMigrations() {
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
   let userProjectNames = [];
   
+  // Normalize user.projects: handle both object arrays and string arrays
+  let normalizedProjects = [];
+  if (user.projects && Array.isArray(user.projects)) {
+    normalizedProjects = user.projects.map(project => {
+      // If project is an object, extract the name; otherwise use as-is
+      return typeof project === 'object' && project !== null ? project.name : project;
+    }).filter(name => name); // Remove any null/undefined values
+  }
+  
   if (user.role === 'Admin' && hasPermission(user, 'admin')) {
     // Admins see all projects - don't filter
     userProjectNames = null; // null means show all
-  } else if (user.projects && Array.isArray(user.projects)) {
-    userProjectNames = user.projects;
+  } else if (normalizedProjects.length > 0) {
+    userProjectNames = normalizedProjects;
   }
   
   // Filter migrations by user's projects
@@ -811,10 +834,19 @@ function getFilteredMigrationsCount() {
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
   let userProjectNames = [];
   
+  // Normalize user.projects: handle both object arrays and string arrays
+  let normalizedProjects = [];
+  if (user.projects && Array.isArray(user.projects)) {
+    normalizedProjects = user.projects.map(project => {
+      // If project is an object, extract the name; otherwise use as-is
+      return typeof project === 'object' && project !== null ? project.name : project;
+    }).filter(name => name); // Remove any null/undefined values
+  }
+  
   if (user.role === 'Admin' && hasPermission(user, 'admin')) {
     userProjectNames = null;
-  } else if (user.projects && Array.isArray(user.projects)) {
-    userProjectNames = user.projects;
+  } else if (normalizedProjects.length > 0) {
+    userProjectNames = normalizedProjects;
   }
   
   let filteredMigrations = migrationHistory.filter(migration => {
@@ -886,12 +918,12 @@ async function saveMigrationToHistory(fileName, status, message = '', duration =
   };
   
   // Try to save to database via API
-  if (window.migrationAPI && userId) {
+  if (window.migrationDBAPI && userId) {
     try {
       const startTime = currentMigration?.startTime ? new Date(currentMigration.startTime).toISOString() : new Date().toISOString();
       const endTime = new Date().toISOString();
       
-      await window.migrationAPI.createMigration({
+      await window.migrationDBAPI.createMigration({
         executionId: executionId,
         userId: userId,
         projectId: projectId,
@@ -1601,10 +1633,10 @@ async function startMigration() {
   }
   
   // Save migration to database (in-progress status)
-  if (window.migrationAPI && user.id) {
+  if (window.migrationDBAPI && user.id) {
     try {
       const startTime = new Date().toISOString();
-      await window.migrationAPI.createMigration({
+      await window.migrationDBAPI.createMigration({
         executionId: executionId,
         userId: user.id,
         projectId: projectId,

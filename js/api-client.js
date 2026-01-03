@@ -73,8 +73,9 @@ const userAPI = {
   },
 };
 
-// Migration API methods
-const migrationAPI = {
+// Migration Database API methods (for history/CRUD)
+// Note: These are separate from the MigrationAPI class in api.js which handles uploads
+const migrationDBAPI = {
   // Get all migrations
   async getMigrations() {
     return apiRequest('/api/migrations');
@@ -147,8 +148,8 @@ const projectAPI = {
     if (typeof projectAPI !== 'undefined') {
       window.projectAPI = projectAPI;
     }
-    if (typeof migrationAPI !== 'undefined') {
-      window.migrationAPI = migrationAPI;
+    if (typeof migrationDBAPI !== 'undefined') {
+      window.migrationDBAPI = migrationDBAPI;
     }
     if (typeof API_BASE_URL !== 'undefined') {
       window.API_BASE_URL = API_BASE_URL;
@@ -158,7 +159,7 @@ const projectAPI = {
     console.log('📍 API Base URL:', window.API_BASE_URL);
     console.log('🔗 userAPI available:', typeof window.userAPI !== 'undefined');
     console.log('🔗 projectAPI available:', typeof window.projectAPI !== 'undefined');
-    console.log('🔗 migrationAPI available:', typeof window.migrationAPI !== 'undefined');
+    console.log('🔗 migrationDBAPI available:', typeof window.migrationDBAPI !== 'undefined');
     
     // Verify they're actually set
     if (typeof window.userAPI === 'undefined') {

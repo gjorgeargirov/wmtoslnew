@@ -236,6 +236,15 @@ async function authenticateUser(email, password) {
     try {
       const result = await API_CLIENT.login(trimmedEmail, trimmedPassword);
       console.log('✅ Login via API successful');
+      
+      // Normalize user.projects: convert project objects to project names
+      if (result.user && result.user.projects && Array.isArray(result.user.projects)) {
+        result.user.projects = result.user.projects.map(project => {
+          // If project is an object, extract the name; otherwise use as-is
+          return typeof project === 'object' && project !== null ? project.name : project;
+        }).filter(name => name); // Remove any null/undefined values
+      }
+      
       return result;
     } catch (error) {
       console.error('❌ API login failed:', error.message);

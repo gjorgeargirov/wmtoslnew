@@ -1170,9 +1170,9 @@ async function loadMigrationsTable() {
   let migrationHistory = [];
   
   // Try to load from API first
-  if (window.migrationAPI) {
+  if (window.migrationDBAPI) {
     try {
-      const result = await window.migrationAPI.getMigrations();
+      const result = await window.migrationDBAPI.getMigrations();
       if (result && Array.isArray(result.migrations)) {
         migrationHistory = result.migrations;
         console.log('✅ Loaded migrations from database:', migrationHistory.length);
@@ -1300,14 +1300,14 @@ async function deleteMigration(executionId) {
     async () => {
       try {
         // Try to delete from database first
-        if (window.migrationAPI) {
+        if (window.migrationDBAPI) {
           try {
             // Get all migrations to find the ID
-            const result = await window.migrationAPI.getMigrations();
+            const result = await window.migrationDBAPI.getMigrations();
             if (result && Array.isArray(result.migrations)) {
               const migration = result.migrations.find(m => m.executionId === executionId);
               if (migration && migration.id) {
-                await window.migrationAPI.deleteMigration(migration.id);
+                await window.migrationDBAPI.deleteMigration(migration.id);
                 console.log('✅ Migration deleted from database');
                 showToast('Migration deleted successfully!', 'success');
                 await loadMigrationsTable();
@@ -1367,9 +1367,9 @@ async function deleteAllMigrations() {
         async () => {
           try {
             // Try to delete from database first
-            if (window.migrationAPI) {
+            if (window.migrationDBAPI) {
               try {
-                await window.migrationAPI.deleteAllMigrations();
+                await window.migrationDBAPI.deleteAllMigrations();
                 console.log('✅ All migrations deleted from database');
               } catch (error) {
                 console.error('❌ Failed to delete migrations from database:', error);

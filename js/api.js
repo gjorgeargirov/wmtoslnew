@@ -458,5 +458,8 @@ class MigrationAPI {
 // Create API instance
 const migrationAPI = new MigrationAPI();
 
+// Expose globally for use in script.js
+window.migrationAPI = migrationAPI;
+
 // Connection test disabled - not needed for file uploads
 // The connection will be tested when user actually uploads a file
