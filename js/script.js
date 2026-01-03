@@ -1201,7 +1201,7 @@ function updateSidebarUserCard(user, initials) {
   }
 }
 
-function savePreferences() {
+async function savePreferences() {
   const preferences = {
     emailNotifications: document.getElementById('prefEmailNotif').checked,
     browserNotifications: document.getElementById('prefBrowserNotif').checked,
@@ -1214,10 +1214,14 @@ function savePreferences() {
   const avatarInput = document.getElementById('profileAvatarInput');
   if (avatarInput && avatarInput.getAttribute('data-avatar-base64')) {
     const newAvatar = avatarInput.getAttribute('data-avatar-base64');
-    updateUserAvatar(newAvatar);
+    await updateUserAvatar(newAvatar);
+    // Clear the data attribute after saving
+    avatarInput.removeAttribute('data-avatar-base64');
   } else if (avatarInput && avatarInput.getAttribute('data-avatar-cleared') === 'true') {
     // Avatar was removed
-    updateUserAvatar(null);
+    await updateUserAvatar(null);
+    // Clear the data attribute after saving
+    avatarInput.removeAttribute('data-avatar-cleared');
   }
   
   showToast('Preferences saved successfully!', 'success');
@@ -1321,11 +1325,25 @@ window.removeProfileAvatar = function() {
 };
 
 // Update user avatar in user data
-function updateUserAvatar(avatar) {
+async function updateUserAvatar(avatar) {
   const userStr = sessionStorage.getItem('user');
   if (!userStr) return;
   
   const user = JSON.parse(userStr);
+  
+  // Try to save to database via API first
+  if (window.userAPI && user.id) {
+    try {
+      await window.userAPI.updateUser(user.id, { avatar: avatar });
+      console.log('✅ Avatar saved to database');
+    } catch (error) {
+      console.error('❌ Failed to save avatar to database:', error);
+      showToast('Failed to save profile picture to database', 'error');
+      // Continue to update local storage as fallback
+    }
+  }
+  
+  // Update in users array (localStorage fallback)
   const users = getUsers();
   const userIndex = users.findIndex(u => u.email === user.email);
   
@@ -1333,27 +1351,37 @@ function updateUserAvatar(avatar) {
     // Update in users array
     users[userIndex].avatar = avatar;
     saveUsers(users);
-    
-    // Update session storage
-    user.avatar = avatar;
-    sessionStorage.setItem('user', JSON.stringify(user));
-    
-    // Update UI
-    const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
-    updateSidebarUserCard(user, initials);
-    
-    // Update profile avatar display
-    const userAvatar = document.getElementById('userAvatar');
-    if (userAvatar) {
-      if (avatar) {
-        userAvatar.innerHTML = `<img src="${sanitizeHTML(avatar)}" alt="${sanitizeHTML(user.name)}" />`;
-      } else {
-        userAvatar.innerHTML = `<span id="userInitials">${sanitizeHTML(initials)}</span>`;
-      }
-    }
-    
-    showToast('Profile picture updated successfully!', 'success');
   }
+  
+  // Update session storage
+  user.avatar = avatar;
+  sessionStorage.setItem('user', JSON.stringify(user));
+  
+  // Update UI
+  const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase();
+  updateSidebarUserCard(user, initials);
+  
+  // Update profile avatar display
+  const userAvatar = document.getElementById('userAvatar');
+  if (userAvatar) {
+    if (avatar) {
+      userAvatar.innerHTML = `<img src="${sanitizeHTML(avatar)}" alt="${sanitizeHTML(user.name)}" />`;
+    } else {
+      userAvatar.innerHTML = `<span id="userInitials">${sanitizeHTML(initials)}</span>`;
+    }
+  }
+  
+  // Update profile avatar preview
+  const profileAvatarPreview = document.getElementById('profileAvatarPreview');
+  if (profileAvatarPreview) {
+    if (avatar) {
+      profileAvatarPreview.innerHTML = `<img src="${sanitizeHTML(avatar)}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" />`;
+    } else {
+      profileAvatarPreview.innerHTML = `<span id="profileAvatarInitials">${sanitizeHTML(initials)}</span>`;
+    }
+  }
+  
+  showToast('Profile picture updated successfully!', 'success');
 }
 
 // Step navigation
@@ -2340,9 +2368,9 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   if (btnSavePreferences) {
-    btnSavePreferences.addEventListener('click', function(e) {
+    btnSavePreferences.addEventListener('click', async function(e) {
       e.preventDefault();
-      savePreferences();
+      await savePreferences();
     });
   }
   
