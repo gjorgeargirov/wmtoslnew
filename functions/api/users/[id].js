@@ -34,7 +34,7 @@ export async function onRequest(context) {
   // PUT update user
   if (request.method === 'PUT') {
     try {
-      const { email, password, name, role, department, permissions, projects } = await request.json();
+      const { email, password, name, role, department, permissions, projects, avatar } = await request.json();
 
       // Build update query dynamically
       const updates = [];
@@ -71,6 +71,11 @@ export async function onRequest(context) {
       if (permissions) {
         updates.push('permissions = ?');
         values.push(JSON.stringify(permissions));
+      }
+      if (avatar !== undefined) {
+        // Allow null to clear avatar, or set new avatar
+        updates.push('avatar = ?');
+        values.push(avatar || null);
       }
       updates.push('updated_at = CURRENT_TIMESTAMP');
       values.push(userId);

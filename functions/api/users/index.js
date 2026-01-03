@@ -69,7 +69,7 @@ export async function onRequest(context) {
   // POST create user
   if (request.method === 'POST') {
     try {
-      const { email, password, name, role, department, permissions, projects } = await request.json();
+      const { email, password, name, role, department, permissions, projects, avatar } = await request.json();
 
       if (!email || !password || !name) {
         return new Response(JSON.stringify({ error: 'Email, password, and name are required' }), {
@@ -90,8 +90,8 @@ export async function onRequest(context) {
       // Insert user
       const permissionsJson = JSON.stringify(permissions || []);
       const result = await db.prepare(
-        'INSERT INTO users (email, password, name, role, department, permissions) VALUES (?, ?, ?, ?, ?, ?)'
-      ).bind(email, password, name, role || 'User', department || '', permissionsJson).run();
+        'INSERT INTO users (email, password, name, role, department, permissions, avatar) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind(email, password, name, role || 'User', department || '', permissionsJson, avatar || null).run();
 
       const userId = result.meta.last_row_id;
 
